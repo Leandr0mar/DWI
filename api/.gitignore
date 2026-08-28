@@ -32,3 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
+# Spring Boot
+.sts4-cache/
+.springBeans
+.env
+*.local
