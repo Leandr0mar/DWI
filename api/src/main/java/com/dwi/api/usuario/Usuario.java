@@ -1,13 +1,9 @@
 package com.dwi.api.usuario;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
-import com.dwi.api.direccion.Direccion;
-import com.dwi.api.rol.Rol;
+import com.dwi.api.usuario.rol.Rol;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -15,11 +11,12 @@ import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name="usuarios")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario { 
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id_usuario;
+    private long idUsuario;
 
     @NotBlank(message = "El nombre de usuario es obligatorio")
     @Size(min = 3, max= 30, message="El nombre debe tener entre 3 y 30 caracteres")

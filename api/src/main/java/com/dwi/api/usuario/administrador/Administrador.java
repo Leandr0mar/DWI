@@ -1,13 +1,15 @@
-package com.dwi.api.administrador;
+package com.dwi.api.usuario.administrador;
 
 import java.time.LocalDateTime;
+
+import com.dwi.api.usuario.Usuario;
 
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "administradores")
-@PrimaryKeyJoinColumn(name = "id_usuario")
-public class Administrador {
+@PrimaryKeyJoinColumn(name = "idUsuario")
+public class Administrador extends Usuario{
     
     @Column(name = "codigo_empleado", unique = true, length = 20)
     private String codigoEmpleado;
@@ -15,7 +17,7 @@ public class Administrador {
     @Column(name = "area", length = 50)
     private String area;
 
-    @Column(name = "area", length = 50)
+    @Column(name = "cargo", length = 50)
     private String cargo;
 
     @Column(name = "ultimo_acceso")

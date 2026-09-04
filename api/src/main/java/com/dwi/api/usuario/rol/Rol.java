@@ -1,4 +1,4 @@
-package com.dwi.api.rol;
+package com.dwi.api.usuario.rol;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import lombok.*;
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idRol;
 
     @Column(unique = true, nullable = false)
     private String name;

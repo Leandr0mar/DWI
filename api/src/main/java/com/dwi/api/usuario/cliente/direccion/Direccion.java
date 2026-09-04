@@ -1,10 +1,11 @@
-package com.dwi.api.direccion;
+package com.dwi.api.usuario.cliente.direccion;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import com.dwi.api.usuario.Usuario;
+import com.dwi.api.usuario.cliente.Cliente;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -13,7 +14,12 @@ public class Direccion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idDireccion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonIgnore // Evita ciclos infinitos en serialización JSON
+    private Cliente cliente; // <--- Este nombre DEBE coincidir con mappedBy = "cliente"
 
     @NotBlank(message = "Debes asignar un alias (ej. Casa, Trabajo)")
     @Size(max = 30)
@@ -46,10 +52,4 @@ public class Direccion {
 
     @Column(name = "codigo_postal", length = 10)
     private String codigoPostal; // Opcional, sin @NotBlank
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
-
 }
