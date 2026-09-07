@@ -1,121 +1,71 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import Productos from './components/Productos'
+import ProcesoHelado from './components/ProcesoHelado'
+import type { Producto } from './components/ProductoCard'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [carrito, setCarrito] = useState<Producto[]>([])
+  const [carritoAbierto, setCarritoAbierto] = useState(false)
+
+  const agregarAlCarrito = (producto: Producto) => {
+    setCarrito((actual) => [...actual, producto])
+  }
+
+  const total = carrito.reduce((suma, producto) => suma + producto.precio, 0)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+    <div className="app">
+      <header className="navbar">
+        <div className="logo-text">🍨 <span>Cremissimo</span></div>
+        <nav>
+          <a href="#inicio">Inicio</a>
+          <a href="#productos">Productos</a>
+          <a href="#proceso">Nosotros</a>
+        </nav>
+        <button className="btn-carrito" onClick={() => setCarritoAbierto(true)}>
+          🛒 Carrito <span>{carrito.length}</span>
         </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main id="inicio">
+        <Productos onAgregar={agregarAlCarrito} />
+        <ProcesoHelado />
+      </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {carritoAbierto && (
+        <div className="carrito-backdrop" onClick={() => setCarritoAbierto(false)}>
+          <aside className="carrito-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="carrito-header">
+              <h2>Tu carrito</h2>
+              <button onClick={() => setCarritoAbierto(false)} aria-label="Cerrar">✕</button>
+            </div>
+
+            {carrito.length === 0 ? (
+              <p className="carrito-vacio">Todavía no agregaste helados.</p>
+            ) : (
+              <>
+                <div className="carrito-items">
+                  {carrito.map((producto, index) => (
+                    <div className="carrito-item" key={`${producto.id}-${index}`}>
+                      <img src={producto.imagen} alt="" />
+                      <div>
+                        <strong>{producto.nombre}</strong>
+                        <small>S/. {producto.precio.toFixed(2)}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="carrito-total">
+                  <span>Total</span>
+                  <strong>S/. {total.toFixed(2)}</strong>
+                </div>
+              </>
+            )}
+          </aside>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      )}
+    </div>
   )
 }
 
