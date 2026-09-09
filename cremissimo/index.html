@@ -1,13 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cremissimo</title>
+    <meta name="description" content="Cremissimo, el sabor de lo bien hecho." />
+    <title>Cremissimo | Helados para cada momento</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <noscript>
+        <header>
+          <a href="#inicio">Cremissimo</a>
+          <nav aria-label="Navegacion principal">
+            <a href="#inicio">Inicio</a>
+            <a href="#productos">Productos</a>
+            <a href="#nosotros">Nosotros</a>
+          </nav>
+        </header>
+        <main>
+          <section id="inicio" aria-labelledby="hero-title">
+            <p>Desde 1999, haciendo pausas deliciosas</p>
+            <h1 id="hero-title">El sabor de lo bien hecho.</h1>
+            <p>Helados cremosos preparados para convertir cualquier dia en una pequena celebracion.</p>
+            <a href="#productos">Explorar sabores</a>
+          </section>
+        </main>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

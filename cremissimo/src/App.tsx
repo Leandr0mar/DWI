@@ -3,6 +3,8 @@ import Productos from './components/Productos'
 import ProcesoHelado from './components/ProcesoHelado'
 import type { Producto } from './components/ProductoCard'
 import './App.css'
+import Header from './header'
+import Hero from './hero'
 
 function App() {
   const [carrito, setCarrito] = useState<Producto[]>([])
@@ -15,18 +17,10 @@ function App() {
   const total = carrito.reduce((suma, producto) => suma + producto.precio, 0)
 
   return (
+
     <div className="app">
-      <header className="navbar">
-        <div className="logo-text">🍨 <span>Cremissimo</span></div>
-        <nav>
-          <a href="#inicio">Inicio</a>
-          <a href="#productos">Productos</a>
-          <a href="#proceso">Nosotros</a>
-        </nav>
-        <button className="btn-carrito" onClick={() => setCarritoAbierto(true)}>
-          🛒 Carrito <span>{carrito.length}</span>
-        </button>
-      </header>
+      <Header />
+      <Hero />
 
       <main id="inicio">
         <Productos onAgregar={agregarAlCarrito} />
