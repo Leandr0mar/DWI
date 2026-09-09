@@ -3,6 +3,9 @@ import Productos from './components/Productos'
 import ProcesoHelado from './components/ProcesoHelado'
 import type { Producto } from './components/ProductoCard'
 import './App.css'
+import Nosotros from './nosotros'
+import ProductosDestacados from './productos_destacados'
+import logo from './assets/logo/img_logo.png'
 import Header from './header'
 import Hero from './hero'
 
@@ -60,6 +63,10 @@ function App() {
         </div>
       )}
     </div>
+
+      <Nosotros />
+      <ProductosDestacados />
+    
   )
 }
 
