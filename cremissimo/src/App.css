@@ -140,6 +140,7 @@
     gap: 12px 18px;
   }
 }
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -158,6 +159,7 @@
     outline-offset: 2px;
   }
 }
+
 
 .hero-section {
   min-height: 600px;
@@ -266,14 +268,6 @@
 
 .hero {
   position: relative;
-
-  width: 300px;
-  height: 300px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
   .base,
   .framework,
   .vite {
@@ -284,6 +278,7 @@
   .base {
     width: 230px;
     height: auto;
+
     position: relative;
     z-index: 0;
   }
@@ -297,14 +292,15 @@
     z-index: 1;
     top: 70px;
     height: 45px;
+
     transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
       scale(1.4);
   }
 
   .vite {
     z-index: 0;
-    top: 145px;
-    height: 42px;
+    top: 107px;
+    height: 26px;
     width: auto;
     transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
       scale(0.8);
@@ -493,3 +489,45 @@
 @media (max-width: 1000px) { .productos-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 700px) { .navbar nav { display: none; } .navbar { padding: 0 18px; } .productos-grid { grid-template-columns: repeat(2, 1fr); } .productos-titulo h2, .proceso-section h2 { font-size: 34px; } }
 @media (max-width: 430px) { .productos-grid { grid-template-columns: 1fr; } .producto-imagen { height: 190px; } }
+
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+}
+
+.app {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+
+    min-height: 500px;
+
+    padding: 80px;
+
+    text-align: center;
+
+    background: #f7f3ef;
+}
+
+.main-content h1 {
+    color: #2b180d;
+}
