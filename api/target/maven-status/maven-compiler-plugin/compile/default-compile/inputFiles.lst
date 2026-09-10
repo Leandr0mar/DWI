@@ -1,0 +1,14 @@
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\ApiApplication.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\enums\EstadoHelado.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\enums\TipoPresentacion.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\Helado.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\HeladoController.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\HeladoRepository.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\HeladoService.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\sabor\Sabor.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\helado\sabor\SaborRepository.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\usuario\administrador\Administrador.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\usuario\cliente\Cliente.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\usuario\cliente\direccion\Direccion.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\usuario\rol\Rol.java
+C:\Repositorios\DWI2\api\src\main\java\com\dwi\api\usuario\Usuario.java
