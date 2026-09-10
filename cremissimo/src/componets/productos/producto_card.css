@@ -1,0 +1,77 @@
+.producto-card {
+  background: #fff;
+  border: 1px solid #ead9bd;
+  border-radius: 13px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: 0.25s ease;
+}
+
+.producto-card:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.producto-imagen {
+  display: block;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  width: 100%;
+}
+
+.producto-info {
+  padding: 10px 12px 12px;
+}
+
+.producto-info h3 {
+  color: #2f2018;
+  font-family: 'Pacifico', cursive;
+  font-size: 15px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.producto-sabor {
+  color: #765d4d;
+  font-size: 10px;
+  margin: 4px 0 12px;
+}
+
+.producto-footer {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.producto-precio {
+  color: #ff9800;
+  font-size: 13px;
+}
+
+.btn-agregar {
+  background: #2874bd;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 8px 12px;
+}
+
+@media (max-width: 360px) {
+  .producto-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .btn-agregar {
+    width: 100%;
+  }
+}
+
+.btn-agregar:hover { 
+  background: #185d9f; 
+}

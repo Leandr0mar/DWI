@@ -1,0 +1,59 @@
+.productos-section {
+  box-sizing: border-box;
+  background: #fff;
+  padding: 70px 32px 85px;
+}
+
+.productos-titulo {
+  margin-bottom: 38px;
+  text-align: center;
+}
+
+.catalogo {
+  background: #dceaff;
+  border-radius: 20px;
+  color: #1769d2;
+  display: inline-block;
+  font-size: 12px;
+  margin-bottom: 10px;
+  padding: 7px 16px;
+}
+
+.productos-titulo h2, .proceso-section h2 {
+  font-family: 'Pacifico', cursive;
+  font-weight: 400;
+}
+
+.productos-titulo h2 {
+  color: #382117;
+  font-size: 42px;
+  margin: 0;
+}
+
+.productos-titulo p {
+  color: #765d4d;
+  font-size: 13px;
+  margin: 6px auto 0;
+}
+
+.productos-grid{
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  margin: auto;
+  width: min(970px, 100%);
+}
+
+@media (max-width: 600px) {
+  .productos-section {
+    padding: 48px 16px 60px;
+  }
+
+  .productos-titulo h2 {
+    font-size: clamp(30px, 10vw, 42px);
+  }
+
+  .productos-titulo p {
+    line-height: 1.5;
+  }
+}
