@@ -1,3 +1,5 @@
+import './producto_card.css'
+
 export interface Producto {
   id: number
   nombre: string
@@ -11,7 +13,7 @@ interface Props {
   onAgregar: (producto: Producto) => void
 }
 
-export default function ProductoCard({ producto, onAgregar }: Props) {
+function ProductoCard({ producto, onAgregar }: Props) {
   return (
     <article className="producto-card">
       <img className="producto-imagen" src={producto.imagen} alt={producto.nombre} loading="lazy" />
@@ -28,3 +30,5 @@ export default function ProductoCard({ producto, onAgregar }: Props) {
     </article>
   )
 }
+
+export default ProductoCard

@@ -1,5 +1,10 @@
-import "./Footer.css";
+import "./footer.css";
 import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube } from "react-icons/fa6";
+import empresa1 from "../../assets/footer/empresa-1.jpg";
+import empresa2 from "../../assets/footer/empresa-2.jpg";
+import empresa3 from "../../assets/footer/empresa-3.jpg";
+import logoCremissimo from "../../assets/footer/Logo-cremissimo.jpg";
+import logoUniversidad from "../../assets/footer/Logo-universidad.png";
 
 function Footer() {
   return (
@@ -60,13 +65,7 @@ function Footer() {
             CONTACTO
         ========================== */}
         <section className="footer-contact">
-          <div className="logo-container">
-            <img
-              src="/Logo-cremissimo.jpg"
-              alt="Cremissimo"
-              className="logo"
-            />
-          </div>
+ 
 
           <h2>Contacto</h2>
 
@@ -102,7 +101,7 @@ function Footer() {
             rel="noopener noreferrer"
             className="affiliate-card"
           >
-            <img src="/empresa-1.jpg" alt="Bartori" />
+            <img src={empresa1} alt="Bartori" />
             <span className="affiliate-label">Afiliado</span>
             <strong>Bartori</strong>
           </a>
@@ -113,7 +112,7 @@ function Footer() {
             rel="noopener noreferrer"
             className="affiliate-card"
           >
-            <img src="/empresa-2.jpg" alt="Fruver Delivery" />
+            <img src={empresa2} alt="Fruver Delivery" />
             <span className="affiliate-label">Afiliado</span>
             <strong>Fruver Delivery</strong>
           </a>
@@ -124,7 +123,7 @@ function Footer() {
             rel="noopener noreferrer"
             className="affiliate-card"
           >
-            <img src="/empresa-3.jpg" alt="Nestlé" />
+            <img src={empresa3} alt="Nestlé" />
             <span className="affiliate-label">Afiliado</span>
             <strong>Nestlé</strong>
           </a>
@@ -144,7 +143,7 @@ function Footer() {
             className="university-link"
           >
             <img
-              src="/Logo-universidad.png"
+              src={logoUniversidad}
               alt="Universidad Tecnológica del Perú"
               className="university-logo"
             />
@@ -155,7 +154,7 @@ function Footer() {
         {/* 2. CENTRO: HELADERÍA & COPYRIGHT */}
         <div className="copyright">
           <img
-            src="/Logo-cremissimo.jpg"
+            src={logoCremissimo}
             alt="Cremissimo"
             className="footer-logo"
           />

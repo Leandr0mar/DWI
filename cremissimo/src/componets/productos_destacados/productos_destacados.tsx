@@ -1,8 +1,8 @@
 import './productos_destacados.css'
 import { useState } from 'react'
-import imagenPD1 from './assets/productos_destacados/pd_1.jpg'
-import imagenPD2 from './assets/productos_destacados/pd_2.jpg'
-import imagenPD3 from './assets/productos_destacados/pd_3.jpg'
+import imagenPD1 from '../../assets/productos_destacados/pd_1.jpg'
+import imagenPD2 from '../../assets/productos_destacados/pd_2.jpg'
+import imagenPD3 from '../../assets/productos_destacados/pd_3.jpg'
 const products = [
 	{
 		badge: '⭐ Más vendido',
@@ -69,7 +69,7 @@ function ProductosDestacados() {
 				<p>Los favoritos de la semana, seleccionados por nuestros maestros heladeros.</p>
 			</div>
 
-			<div className="productos-grid">
+			<div className="productos-destacados-grid">
 				{products.map((product) => (
 					<article className="producto-card" key={product.name}>
 						<ProductImage

@@ -26,9 +26,9 @@
 .productos-heading h2 {
   margin: 0 0 8px;
   color: #3b2116;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: 'Pacifico', cursive;
   font-size: clamp(38px, 5vw, 56px);
-  font-style: italic;
+  font-weight: 400;
   line-height: 1.1;
 }
 
@@ -37,9 +37,9 @@
   font-size: 15px;
 }
 
-.productos-grid {
+.productos-destacados-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 24px;
   max-width: 1140px;
   margin: 0 auto;
@@ -143,6 +143,7 @@
 }
 
 .producto-footer button {
+  flex-shrink: 0;
   border: 0;
   border-radius: 12px;
   padding: 10px 18px;
@@ -172,5 +173,35 @@
   .productos-grid {
     grid-template-columns: 1fr;
     max-width: 430px;
+  }
+}
+
+@media (max-width: 600px) {
+  .productos-section {
+    padding: 42px 16px 56px;
+  }
+
+  .productos-heading {
+    margin-bottom: 32px;
+  }
+
+  .productos-heading h2 {
+    font-size: clamp(32px, 10vw, 48px);
+  }
+
+  .productos-heading > p:last-child {
+    line-height: 1.5;
+  }
+
+  .productos-destacados-grid {
+    gap: 16px;
+  }
+
+  .producto-content {
+    padding: 20px;
+  }
+
+  .producto-card p {
+    min-height: 0;
   }
 }

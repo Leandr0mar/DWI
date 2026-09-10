@@ -1,7 +1,7 @@
 import './nosotros.css'
-import imagenPrincipal from './assets/nosotros/img1.jpg'
-import imagenLocal from './assets/nosotros/img2.png'
-import imagenMostrador from './assets/nosotros/img3.png'
+import imagenPrincipal from '../../assets/nosotros/img1.jpg'
+import imagenLocal from '../../assets/nosotros/img2.png'
+import imagenMostrador from '../../assets/nosotros/img3.png'
 
 const values = [
   {

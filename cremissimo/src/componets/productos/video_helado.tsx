@@ -1,4 +1,6 @@
-export default function ProcesoHelado() {
+import "./video_helado.css"
+
+function VideoHelado() {
   return (
     <section className="proceso-section" id="proceso">
       <div className="proceso-overlay">
@@ -20,3 +22,5 @@ export default function ProcesoHelado() {
     </section>
   )
 }
+
+export default VideoHelado

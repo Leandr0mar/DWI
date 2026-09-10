@@ -1,4 +1,5 @@
-import ProductoCard, { type Producto } from './ProductoCard'
+import ProductoCard, { type Producto } from './producto_card.tsx'
+import './productos.css'
 
 interface Props {
   onAgregar: (producto: Producto) => void
@@ -38,7 +39,7 @@ function productosId(seed: string, nombre: string) {
   return n
 }
 
-export default function Productos({ onAgregar }: Props) {
+function Productos({ onAgregar }: Props) {
   return (
     <section className="productos-section" id="productos">
       <div className="productos-titulo">
@@ -55,3 +56,5 @@ export default function Productos({ onAgregar }: Props) {
     </section>
   )
 }
+
+export default Productos
