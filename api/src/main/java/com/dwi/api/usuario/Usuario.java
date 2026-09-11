@@ -8,7 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="usuarios")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -16,7 +22,7 @@ public class Usuario {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long idUsuario;
+    private long id;
 
     @NotBlank(message = "El nombre de usuario es obligatorio")
     @Size(min = 3, max= 30, message="El nombre debe tener entre 3 y 30 caracteres")

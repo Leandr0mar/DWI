@@ -1,6 +1,8 @@
 package com.dwi.api.helado;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +25,13 @@ public class HeladoService {
     }
 
     @Transactional
-    public Helado crear(Helado helado, Long idSabor) {
-        Sabor sabor = saborRepository.findById(idSabor)
-                .orElseThrow(() -> new EntityNotFoundException("Sabor  no encontrado con ID: " + idSabor));
+    public Helado crear(Helado helado, Set<Long> idsSabores) {
+        List<Sabor> saboresEncontrados = saborRepository.findAllById(idsSabores);
+        if (saboresEncontrados.isEmpty()) {
+            throw new EntityNotFoundException("No se encontraron sabores válidos con los IDs proporcionados");
+        }
 
-        helado.setSabor(sabor);
+        helado.setSabores(new HashSet<>(saboresEncontrados));
 
         if (helado.getStock() != null && helado.getStock() == 0) {
             helado.setEstado(EstadoHelado.AGOTADO);
@@ -48,13 +52,12 @@ public class HeladoService {
     }
 
     @Transactional
-    public Helado actualizar(Long id, Helado datosNuevos, Long idSabor) {
+    public Helado actualizar(Long id, Helado datosNuevos, Set<Long> idsSabores) {
         Helado heladoExistente = obtenerPorId(id);
 
-        if (idSabor != null && !heladoExistente.getSabor().getId().equals(idSabor)) {
-            Sabor nuevoSabor = saborRepository.findById(idSabor)
-                    .orElseThrow(() -> new EntityNotFoundException("Sabor no encontrado con ID: " + idSabor));
-            heladoExistente.setSabor(nuevoSabor);
+        if (idsSabores != null && !idsSabores.isEmpty()) {
+            List<Sabor> nuevosSabores = saborRepository.findAllById(idsSabores);
+            heladoExistente.setSabores(new HashSet<>(nuevosSabores));
         }
 
         heladoExistente.setNombre(datosNuevos.getNombre());
