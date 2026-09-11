@@ -39,13 +39,16 @@
   border: 3px solid #6b481b;
   border-radius: 17px;
   box-shadow: 0 8px 25px rgba(0,0,0,.35);
-  height: 340px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   position: relative;
-  width: min(610px, 90vw);
+  width: min(800px, 90vw);
 }
 
+.video-container iframe,
 .video-container img {
+  border: 0;
+  display: block;
   height: 100%;
   object-fit: cover;
   width: 100%;

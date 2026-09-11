@@ -10,12 +10,12 @@ function VideoHelado() {
         </p>
 
         <div className="video-container">
-          <img
-            src="https://images.unsplash.com/photo-1567206563064-6f60f40a2b57?auto=format&fit=crop&w=1200&q=80"
-            alt="Proceso artesanal del helado"
+          <iframe
+            src="https://www.youtube.com/embed/FKqGHLjSXb8"
+            title="Promotional video for Ice Cream"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
           />
-          <button className="play-button" type="button" aria-label="Reproducir video">▶</button>
-          <div className="video-info">▶ El proceso artesanal de Cremissimo — 3:42</div>
         </div>
       </div>
     </section>
