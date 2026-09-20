@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import './Header.css'
-import logoCremissimo from '../../assets/logo/img_logo3.png'
+import './header.css'
+import logoCremissimo from '../../../assets/logo/img_logo3.png'
 
 interface HeaderProps {
   onAbrirCarrito: () => void

@@ -1,4 +1,4 @@
-import type { Producto } from '../productos/producto_card.tsx'
+import type { Producto } from '../../productos/ProductoCard'
 import './carrito_modal.css'
 
 interface Props {

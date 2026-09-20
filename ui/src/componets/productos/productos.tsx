@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import ProductoCard, { type Producto } from './producto_card'
+import ProductoCard, { type Producto } from './ProductoCard'
 import './productos.css'
 
 interface Props {
@@ -60,8 +60,8 @@ function Productos({ onAgregar }: Props) {
       {isLoading && <p className="text-center">Cargando deliciosos helados...</p>}
       
       {isError && (
-        <p className="text-center text-red-500">
-          Ocurrió un error: {error instanceof Error ? error.message : 'Error desconocido'}
+        <p className="text-center">
+          Ocurrió un error: vuelve a intentarlo más tarde.
         </p>
       )}
 

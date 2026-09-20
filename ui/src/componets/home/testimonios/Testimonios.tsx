@@ -1,7 +1,7 @@
 import "./testimonios.css";
-import cliente1 from "../../assets/testimonios/cliente-1.jpg";
-import cliente2 from "../../assets/testimonios/cliente-2.jpg";
-import cliente3 from "../../assets/testimonios/cliente-3.jpg";
+import cliente1 from "../../../assets/testimonios/cliente-1.jpg";
+import cliente2 from "../../../assets/testimonios/cliente-2.jpg";
+import cliente3 from "../../../assets/testimonios/cliente-3.jpg";
 
 const testimoniosData = [
   {

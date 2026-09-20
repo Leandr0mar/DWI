@@ -1,0 +1,1 @@
+//hola, en administrador se implementara mas archivos tsx, para cada apartado crud y demas

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import './hero.css'
-import heroBackground1 from '../../assets/hero/img1.jpg'
-import heroBackground2 from '../../assets/hero/img2.jpg'
-import heroBackground3 from '../../assets/hero/img3.webp'
+import heroBackground1 from '../../../assets/hero/img1.jpg'
+import heroBackground2 from '../../../assets/hero/img2.jpg'
+import heroBackground3 from '../../../assets/hero/img3.webp'
 
 const heroImages = [
   {

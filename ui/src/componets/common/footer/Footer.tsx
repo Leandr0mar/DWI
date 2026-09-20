@@ -1,9 +1,9 @@
 import "./footer.css";
 import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube } from "react-icons/fa6";
-import empresa1 from "../../assets/footer/empresa-1.jpg";
-import empresa2 from "../../assets/footer/empresa-2.jpg";
-import empresa3 from "../../assets/footer/empresa-3.jpg";
-import logoUniversidad from "../../assets/footer/Logo-universidad.png";
+import empresa1 from "../../../assets/footer/empresa-1.jpg";
+import empresa2 from "../../../assets/footer/empresa-2.jpg";
+import empresa3 from "../../../assets/footer/empresa-3.jpg";
+import logoUniversidad from "../../../assets/footer/Logo-universidad.png";
 
 function Footer() {
   return (
