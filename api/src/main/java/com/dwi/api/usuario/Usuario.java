@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.dwi.api.usuario.rol.Rol;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -22,6 +23,7 @@ public class Usuario {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long id;
 
     @NotBlank(message = "El nombre de usuario es obligatorio")
@@ -41,6 +43,7 @@ public class Usuario {
 
     @NotBlank(message = "La contraseña es obligatorio")
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @NotBlank(message = "El numero telefonico es obligatorio")
