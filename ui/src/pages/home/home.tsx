@@ -7,6 +7,7 @@ import VideoHelado from '../../componets/home/video_helado/VideoHelado'
 import Testimonios from '../../componets/home/testimonios/Testimonios'
 import Footer from '../../componets/common/footer/Footer'
 import CarritoModal from '../../componets/common/carrito_flotante/CarritoModal'
+import CarritoFlotante from '../../componets/common/carrito_flotante/CarritoFlotante'
 import { useState } from 'react'
 import type { Producto } from '../../componets/productos/ProductoCard'
 
@@ -22,14 +23,13 @@ function Home() {
 
     return (
     <>
-      <Header onAbrirCarrito={() => setCarritoAbierto(true)} />
+      <Header />
       <Hero />
 
       <Nosotros />
       <ProductosDestacados />
       
       <main id="inicio">
-        <Productos onAgregar={agregarAlCarrito} />
         <VideoHelado />
       </main>
 
@@ -37,6 +37,10 @@ function Home() {
         abierto={carritoAbierto}
         carrito={carrito}
         onCerrar={() => setCarritoAbierto(false)}
+      />
+      <CarritoFlotante
+        cantidad={carrito.length}
+        onAbrir={() => setCarritoAbierto(true)}
       />
 
       <Testimonios />

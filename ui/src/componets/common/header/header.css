@@ -71,7 +71,8 @@
 }
 
 .header-nav-link {
-  font-size: 0.875rem;
+  font-family: inherit;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #2C1A0E;
   text-decoration: none;
@@ -170,10 +171,11 @@
 .header-nav-mobile {
   background-color: #FFFDF5;
   border-top: 1px solid #E8D9B8;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 @media (min-width: 768px) {
@@ -183,10 +185,14 @@
 }
 
 .header-mobile-link {
-  font-size: 0.875rem;
+  width: 100%;
+  padding: 0.35rem 0;
+  font-family: inherit;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #2C1A0E;
   text-decoration: none;
+  text-align: center;
   transition: color 0.2s ease;
 }
 
