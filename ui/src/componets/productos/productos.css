@@ -20,7 +20,7 @@
 }
 
 .productos-titulo h2, .proceso-section h2 {
-  font-family: 'Pacifico', cursive;
+  font-family: var(--font-primary);
   font-weight: 400;
 }
 
