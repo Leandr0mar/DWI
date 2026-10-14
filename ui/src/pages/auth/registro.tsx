@@ -1,16 +1,27 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { AuthShell, Field, SubmitButton, SuccessMessage } from "../../componets/auth/authcomponents";
+import { registrarCliente } from "../../services/auth";
 
 export default function Registro() {
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const registration = useMutation({
+    mutationFn: registrarCliente,
+    onSuccess: (response) => {
+      setSuccessMessage(response.mensaje);
+      setSubmitted(true);
+    },
+    onError: (error: Error) => setFormError(error.message),
+  });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const password = formData.get("register-password");
+    const password = String(formData.get("register-password") ?? "");
     const passwordConfirmation = formData.get("confirm-password");
 
     if (password !== passwordConfirmation) {
@@ -19,7 +30,14 @@ export default function Registro() {
     }
 
     setFormError("");
-    setSubmitted(true);
+    registration.mutate({
+      nombres: String(formData.get("first-name") ?? ""),
+      apellidos: String(formData.get("last-name") ?? ""),
+      email: String(formData.get("register-email") ?? ""),
+      dni: String(formData.get("dni") ?? ""),
+      telefono: String(formData.get("phone") ?? ""),
+      password,
+    });
   }
 
   return (
@@ -31,7 +49,7 @@ export default function Registro() {
       {submitted ? (
         <SuccessMessage
           title="Cuenta lista para crear"
-          description="El formulario funciona y está preparado para conectarse a tu base de datos."
+          description={successMessage}
           action="Ir a iniciar sesión"
           to="/login"
         />
@@ -49,16 +67,16 @@ export default function Registro() {
               placeholder="Ingresa tu documento"
               autoComplete="off"
               inputMode="numeric"
-              pattern="[0-9]{6,12}"
+              pattern="[0-9]{8}"
             />
             <Field
               id="phone"
               label="Teléfono"
               type="tel"
-              placeholder="300 123 4567"
+              placeholder="987 654 321"
               autoComplete="tel"
               inputMode="tel"
-              pattern="[0-9 +()-]{7,20}"
+              pattern="9[0-9]{8}"
             />
           </div>
           <div className="auth-form-grid">
@@ -90,7 +108,9 @@ export default function Registro() {
               Acepto los <a href="#terminos" className="auth-link">términos y condiciones</a> y la política de privacidad.
             </span>
           </label>
-          <SubmitButton>Crear mi cuenta</SubmitButton>
+          <SubmitButton disabled={registration.isPending}>
+            {registration.isPending ? "Creando cuenta…" : "Crear mi cuenta"}
+          </SubmitButton>
           <p className="auth-form-footer">
             ¿Ya tienes una cuenta?{" "}
             <Link to="/login" className="auth-link-gold">

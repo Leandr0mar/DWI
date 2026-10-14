@@ -163,9 +163,9 @@ export function Field({
   );
 }
 
-export function SubmitButton({ children }: { children: ReactNode }) {
+export function SubmitButton({ children, disabled = false }: { children: ReactNode; disabled?: boolean }) {
   return (
-    <button type="submit" className="auth-submit-btn">
+    <button type="submit" className="auth-submit-btn" disabled={disabled}>
       {children}
     </button>
   );
