@@ -33,8 +33,7 @@ public class AuthService {
         // El AuthenticationManager devuelve el principal ya validado para firmar el JWT.
         String jwtToken = jwtService.generateToken((UserDetails) authentication.getPrincipal());
 
-        AuthResponseDTO profile = toProfile(usuario);
-        return new LoginResult(jwtToken, profile.nombreCompleto(), profile.rol(), profile.avatarUrl());
+        return new LoginResult(jwtToken, toProfile(usuario));
     }
 
     public AuthResponseDTO getCurrentUser(String email) {
@@ -51,5 +50,5 @@ public class AuthService {
         );
     }
 
-    public record LoginResult(String token, String nombreCompleto, String rol, String avatarUrl) {}
+    public record LoginResult(String token, AuthResponseDTO profile) {}
 }

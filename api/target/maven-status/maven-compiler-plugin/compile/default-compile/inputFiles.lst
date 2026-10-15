@@ -27,6 +27,7 @@ C:\Repositorios\DWI\api\src\main\java\com\dwi\api\pedido\model\Pedido.java
 C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\controller\AuthController.java
 C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\dto\AuthResponseDTO.java
 C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\dto\LoginRequestDTO.java
+C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\jwt\AuthCookieService.java
 C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\jwt\JwtAuthenticationFilter.java
 C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\jwt\JwtService.java
 C:\Repositorios\DWI\api\src\main\java\com\dwi\api\seguridad\model\PasswordResetToken.java

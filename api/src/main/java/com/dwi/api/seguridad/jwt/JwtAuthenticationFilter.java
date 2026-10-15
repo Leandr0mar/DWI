@@ -23,6 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final AuthCookieService authCookieService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -32,12 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         
-        final String authorization = request.getHeader("Authorization");
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        final String jwt = authCookieService.readToken(request).orElse(null);
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
-        final String jwt = authorization.substring(7);
 
         // Un JWT ausente, mal formado, vencido o de un usuario eliminado no autentica.
         // La cadena de seguridad responderá 401 si el recurso requiere autenticación.

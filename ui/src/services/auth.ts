@@ -24,27 +24,6 @@ export interface LoginPayload {
   password: string;
 }
 
-interface LoginResponse extends AuthUser {
-  token: string;
-}
-
-function readToken(): string | null {
-  try {
-    return localStorage.getItem("authToken");
-  } catch {
-    return null;
-  }
-}
-
-function saveToken(token: string | null) {
-  try {
-    if (token) localStorage.setItem("authToken", token);
-    else localStorage.removeItem("authToken");
-  } catch {
-    throw new Error("No se pudo guardar la sesión en este navegador.");
-  }
-}
-
 export class AuthApiError extends Error {
   readonly status: number;
 
@@ -66,17 +45,24 @@ async function responseError(response: Response): Promise<Error> {
   return new AuthApiError(message, response.status);
 }
 
-async function postJson<T>(path: string, payload?: unknown, authenticated = false): Promise<T> {
-  const token = authenticated ? readToken() : null;
+async function getCsrfToken(): Promise<string> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/csrf`, { credentials: "include" });
+  if (!response.ok) throw new Error("No se pudo preparar la solicitud segura.");
+  const body: unknown = await response.json();
+  if (typeof body !== "object" || body === null || !("token" in body) || typeof body.token !== "string") {
+    throw new Error("El servidor no devolvió un token CSRF válido.");
+  }
+  return body.token;
+}
+
+async function postJson<T>(path: string, payload?: unknown): Promise<T> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": csrfToken },
     ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
   });
-
   if (!response.ok) throw await responseError(response);
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
@@ -86,25 +72,17 @@ export function registrarCliente(payload: RegistroPayload) {
   return postJson<{ mensaje: string }>("/api/v1/auth/registro", payload);
 }
 
-export async function iniciarSesion(payload: LoginPayload) {
-  const response = await postJson<LoginResponse>("/api/v1/auth/login", payload);
-  saveToken(response.token);
-  const { token: _token, ...user } = response;
-  return user;
+export function iniciarSesion(payload: LoginPayload) {
+  return postJson<AuthResponse>("/api/v1/auth/login", payload);
 }
 
 export function obtenerUsuarioActual() {
-  const token = readToken();
-  if (!token) return Promise.reject(new AuthApiError("No hay una sesión activa.", 401));
-  return fetch(`${API_BASE_URL}/api/v1/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }).then(async (response) => {
+  return fetch(`${API_BASE_URL}/api/v1/auth/me`, { credentials: "include" }).then(async (response) => {
     if (!response.ok) throw await responseError(response);
     return response.json() as Promise<AuthUser>;
   });
 }
 
 export function cerrarSesion() {
-  saveToken(null);
-  return Promise.resolve();
+  return postJson<void>("/api/v1/auth/logout");
 }

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { ReactNode } from "react";
+import { useState, forwardRef } from "react";
+import type { ReactNode, InputHTMLAttributes } from "react";
 import { Link } from "react-router-dom";
 import "./authcomponents.css";
 
@@ -10,16 +10,10 @@ interface AuthShellProps {
   children: ReactNode;
 }
 
-interface FieldProps {
+interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
   label: string;
-  type?: string;
-  placeholder: string;
-  autoComplete?: string;
-  required?: boolean;
-  inputMode?: "text" | "email" | "tel" | "numeric";
-  pattern?: string;
-  minLength?: number;
+  error?: string; // Nuevo prop para manejar errores dinámicos
 }
 
 interface SuccessMessageProps {
@@ -118,50 +112,55 @@ export function AuthShell({ eyebrow, title, description, children }: AuthShellPr
   );
 }
 
-export function Field({
-  id,
-  label,
-  type = "text",
-  placeholder,
-  autoComplete,
-  required = true,
-  inputMode,
-  pattern,
-  minLength,
-}: FieldProps) {
-  const [visible, setVisible] = useState(false);
-  const isPassword = type === "password";
+export const Field = forwardRef<HTMLInputElement, FieldProps>(
+  (
+    { id, label, type = "text", placeholder, autoComplete, required = true, inputMode, pattern, minLength, error, ...rest },
+    ref
+  ) => {
+    const [visible, setVisible] = useState(false);
+    const isPassword = type === "password";
 
-  return (
-    <label className="auth-field" htmlFor={id}>
-      <span className="auth-label">{label}</span>
-      <span className="auth-input-wrapper">
-        <input
-          id={id}
-          name={id}
-          type={isPassword && visible ? "text" : type}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          required={required}
-          inputMode={inputMode}
-          pattern={pattern}
-          minLength={minLength}
-          className={`auth-input${isPassword ? " auth-input-password" : ""}`}
-        />
-        {isPassword && (
-          <button
-            type="button"
-            className="auth-eye-btn"
-            onClick={() => setVisible((current) => !current)}
-            aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-          >
-            <EyeIcon crossed={visible} />
-          </button>
+    return (
+      <div className="auth-field-container" style={{ display: "flex", flexDirection: "column", gap: "0.25rem", width: "100%" }}>
+        <label className="auth-field" htmlFor={id} style={{ marginBottom: 0 }}>
+          <span className="auth-label">{label}</span>
+          <span className="auth-input-wrapper">
+            <input
+              ref={ref} // Conexión crucial para react-hook-form
+              id={id}
+              name={id}
+              type={isPassword && visible ? "text" : type}
+              placeholder={placeholder}
+              autoComplete={autoComplete}
+              required={required}
+              inputMode={inputMode}
+              pattern={pattern}
+              minLength={minLength}
+              className={`auth-input${isPassword ? " auth-input-password" : ""}`}
+              {...rest} // Pasa onChange, onBlur, etc.
+            />
+            {isPassword && (
+              <button
+                type="button"
+                className="auth-eye-btn"
+                onClick={() => setVisible((current) => !current)}
+                aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                <EyeIcon crossed={visible} />
+              </button>
+            )}
+          </span>
+        </label>
+        {/* Mensaje de error dinámico */}
+        {error && (
+          <span className="auth-form-error" style={{ color: "#ef4444", fontSize: "0.75rem", marginTop: "0.25rem" }}>
+            {error}
+          </span>
         )}
-      </span>
-    </label>
-  );
-}
+      </div>
+    );
+  }
+);
 
 export function SubmitButton({ children, disabled = false }: { children: ReactNode; disabled?: boolean }) {
   return (
