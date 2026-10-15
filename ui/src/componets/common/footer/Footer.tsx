@@ -1,4 +1,5 @@
 import "./footer.css";
+import { Link } from "react-router-dom";
 import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube } from "react-icons/fa6";
 import empresa1 from "../../../assets/footer/empresa-1.jpg";
 import empresa2 from "../../../assets/footer/empresa-2.jpg";
@@ -78,7 +79,7 @@ function Footer() {
             <span className="contact-position">
               Director de Atención al Cliente
             </span>
-            <button className="contact-button">Escríbenos</button>
+            <Link to="/contactos" className="contact-button">Escríbenos</Link>
           </div>
 
           <div className="contact-information">
