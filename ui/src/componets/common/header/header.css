@@ -199,8 +199,3 @@
 .header-mobile-link:hover {
   color: #F9A826;
 }
-
-.header-nav-link.active,
-.header-mobile-link.active {
-  color: #F9A826;
-}
