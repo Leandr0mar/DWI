@@ -1,0 +1,3 @@
+@media (max-width: 1000px) { .productos-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px) { .navbar nav { display: none; } .navbar { padding: 0 18px; } .productos-grid { grid-template-columns: repeat(2, 1fr); } .productos-titulo h2, .proceso-section h2 { font-size: 34px; } }
+@media (max-width: 430px) { .productos-grid { grid-template-columns: 1fr; } .producto-imagen { height: 190px; } }

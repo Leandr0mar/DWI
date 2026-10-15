@@ -1,0 +1,1 @@
+//hola, en cliente se implementara mas archivos tsx, para cada apartado de configuracion y demas
