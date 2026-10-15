@@ -4,6 +4,7 @@ export interface Producto {
   id: number
   nombre: string
   sabor: string
+  sabores: string[]
   precio: number
   imagen: string
 }
