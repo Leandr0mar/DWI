@@ -226,7 +226,43 @@ h6 {
   border: 1px solid #E8D9B8;
 }
 
+.header-user-profile-plain {
+  flex-direction: row;
+  background: transparent;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.header-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-btn-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2C1A0E;
+  background-color: #F9A826;
+  border: 1.5px solid #F9A826;
+  cursor: pointer;
+  padding: 0.55rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.header-btn-logout:hover {
+  background-color: #E09012;
+  border-color: #E09012;
+}
+
 .header-user-avatar {
+  order: 0;
+  flex: 0 0 auto;
   width: 2.3rem;
   height: 2.3rem;
   border-radius: 50%;
@@ -251,33 +287,18 @@ h6 {
   font-size: 0.95rem;
   font-weight: 700;
   color: #2C1A0E;
-  max-width: 8rem;
+  max-width: 12rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.header-btn-logout {
+.header-user-details {
+  order: 1;
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: transparent;
-  border: none;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #C0392B;
-  cursor: pointer;
-  padding: 0.3rem 0.5rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s ease;
-}
-
-.header-btn-logout:hover {
-  background-color: rgba(192, 57, 43, 0.1);
-}
-
-.header-btn-logout-text {
-  display: inline;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
 }
 
 /* --- BOTÓN HAMBURGUESA --- */
@@ -364,24 +385,14 @@ h6 {
 .header-mobile-user {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 .header-mobile-user-info {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-}
-
-.header-btn-logout-mobile {
-  background-color: #C0392B;
-  color: #FFFFFF;
-  border: none;
-  padding: 0.5rem 0.8rem;
-  border-radius: 0.5rem;
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
 }
 
 /* Scrollbar */
