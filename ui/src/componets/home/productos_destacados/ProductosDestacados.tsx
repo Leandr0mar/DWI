@@ -1,38 +1,45 @@
 import './productos_destacados.css'
 import { useState } from 'react'
+import type { Producto } from '../../productos/ProductoCard'
 import imagenPD1 from '../../../assets/productos_destacados/pd_1.jpg'
 import imagenPD2 from '../../../assets/productos_destacados/pd_2.jpg'
 import imagenPD3 from '../../../assets/productos_destacados/pd_3.jpg'
 const products = [
 	{
 		badge: '⭐ Más vendido',
+		id: 1,
+		flavor: 'Cookies',
 		badgeClass: 'is-best-seller',
 		imageClass: 'product-image-cone',
 		image: imagenPD1,
 		imageLabel: 'Imagen del cono de cookies',
 		name: 'Cono Arcoíris',
 		description: 'Tres sabores artesanales en cono de waffle crujiente con lluvia de colores.',
-		price: 'S/ 4.50',
+		price: 4.5,
 	},
 	{
 		badge: '🍓 Temporada',
+		id: 2,
+		flavor: 'Fresa',
 		badgeClass: 'is-seasonal',
 		imageClass: 'product-image-strawberry',
 		image: imagenPD2,
 		imageLabel: 'Imagen del helado de fresa',
 		name: 'Fresa Cremosa',
 		description: 'Helado artesanal de fresa fresca con trocitos de fruta real y crema batida.',
-		price: 'S/ 6.80',
+		price: 6.8,
 	},
 	{
 		badge: '✨ Nuevo',
+		id: 3,
+		flavor: 'Arándano y menta',
 		badgeClass: 'is-new',
 		imageClass: 'product-image-blue',
 		image: imagenPD3,
 		imageLabel: 'Imagen del cono azul mágico',
 		name: 'Cono Azul Mágico',
 		description: 'Sorpresa de arándano y menta azul, visualmente impactante y delicioso.',
-		price: 'S/ 4.20',
+		price: 4.2,
 	},
 ]
 
@@ -44,19 +51,26 @@ function ProductImage({ imageClass, imageLabel, image }: { imageClass: string; i
 	)
 }
 
-function ProductosDestacados() {
+function ProductosDestacados({ onAgregar }: { onAgregar: (producto: Producto) => void }) {
 	const [addedProducts, setAddedProducts] = useState<Record<string, boolean>>({})
 
-	function handleAddProduct(productName: string) {
+	function handleAddProduct(product: (typeof products)[number]) {
 		setAddedProducts((currentProducts) => ({
 			...currentProducts,
-			[productName]: true,
+			[product.name]: true,
 		}))
+		onAgregar({
+			id: product.id,
+			nombre: product.name,
+			sabor: product.flavor,
+			precio: product.price,
+			imagen: product.image,
+		})
 
 		window.setTimeout(() => {
 			setAddedProducts((currentProducts) => ({
 				...currentProducts,
-				[productName]: false,
+				[product.name]: false,
 			}))
 		}, 1500)
 	}
@@ -81,11 +95,11 @@ function ProductosDestacados() {
 							<h3>{product.name}</h3>
 							<p>{product.description}</p>
 							<div className="producto-footer">
-								<strong>{product.price}</strong>
+								<strong>S/ {product.price.toFixed(2)}</strong>
 								<button
 									type="button"
 									className={addedProducts[product.name] ? 'is-added' : ''}
-									onClick={() => handleAddProduct(product.name)}
+					onClick={() => handleAddProduct(product)}
 									aria-pressed={Boolean(addedProducts[product.name])}
 								>
 									{addedProducts[product.name] ? '✓ Agregado' : 'Agregar'}

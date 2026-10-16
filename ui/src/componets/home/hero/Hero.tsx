@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import './hero.css'
 import heroBackground1 from '../../../assets/hero/img1.jpg'
 import heroBackground2 from '../../../assets/hero/img2.jpg'
@@ -43,6 +44,9 @@ export default function Hero() {
             src={image.src}
             alt={image.alt}
             className={`hero-bg-img ${index === activeImage ? 'is-active' : ''}`}
+            loading="eager"
+            decoding={index === 0 ? 'sync' : 'async'}
+            fetchPriority={index === activeImage ? 'high' : 'low'}
           />
         ))}
         <div className="hero-bg-overlay" />
@@ -66,12 +70,12 @@ export default function Hero() {
           </p>
 
           <div className="hero-buttons">
-            <a href="#productos" className="hero-btn-primary">
+            <Link to="/productos" className="hero-btn-primary">
               Explorar sabores
-            </a>
-            <a href="#nosotros" className="hero-btn-secondary">
+            </Link>
+            <Link to="/nosotros" className="hero-btn-secondary">
               Nuestra Historia
-            </a>
+            </Link>
           </div>
 
         </div>

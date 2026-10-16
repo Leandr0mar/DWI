@@ -1,4 +1,5 @@
 import './producto_card.css'
+import { Link } from 'react-router-dom'
 
 export interface Producto {
   id: number
@@ -8,26 +9,46 @@ export interface Producto {
   imagen: string
 }
 
-interface Props {
-  producto: Producto
-  onAgregar: (producto: Producto) => void
+export interface ProductoCatalogo extends Producto {
+  uuid: string
+  categoria: string
+  stockDisponible: number
+  descripcion: string | null
+  pesoVolumen: string | null
+  tipoPresentacion: string | null
 }
 
-function ProductoCard({ producto, onAgregar }: Props) {
+interface Props {
+  producto: ProductoCatalogo
+}
+
+function ProductoCard({ producto }: Props) {
   return (
-    <article className="producto-card">
-      <img className="producto-imagen" src={producto.imagen} alt={producto.nombre} loading="lazy" />
+    <Link
+      to={`/productos/${encodeURIComponent(producto.uuid)}`}
+      className="producto-card"
+      aria-label={`Ver detalles de ${producto.nombre}`}
+    >
+      <div className="producto-imagen-wrapper">
+        <img className="producto-imagen" src={producto.imagen} alt={producto.nombre} loading="lazy" />
+        <span className="producto-categoria">{producto.categoria || 'Catálogo'}</span>
+      </div>
       <div className="producto-info">
         <h3>{producto.nombre}</h3>
-        <p className="producto-sabor">Sabor: {producto.sabor}</p>
+        {producto.descripcion && <p className="producto-descripcion">{producto.descripcion}</p>}
+        <p className="producto-sabor"><strong>Sabores:</strong> {producto.sabor}</p>
+        <div className="producto-atributos">
+          {producto.tipoPresentacion && <span>{producto.tipoPresentacion}</span>}
+          {producto.pesoVolumen && <span>{producto.pesoVolumen}</span>}
+        </div>
         <div className="producto-footer">
           <strong className="producto-precio">S/. {producto.precio.toFixed(2)}</strong>
-          <button className="btn-agregar" onClick={() => onAgregar(producto)}>
-            Agregar
-          </button>
+          <span className={`producto-disponibilidad${producto.stockDisponible > 0 ? '' : ' agotado'}`}>
+            <span aria-hidden="true">●</span> {producto.stockDisponible > 0 ? 'Disponible' : 'Agotado'}
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   )
 }
 

@@ -1,75 +1,114 @@
 .contacto-section {
-  max-width: 1120px;
+  --contacto-ink: #2c1a0e;
+  --contacto-muted: #765d4d;
+  --contacto-cream: #fffdf5;
+  --contacto-soft-cream: #fdf7e8;
+  --contacto-border: #e8d9b8;
+  --contacto-gold: #f9a826;
+  --contacto-gold-hover: #e09012;
+  --contacto-blue: #2a6db5;
+  --contacto-blue-hover: #1e5a9c;
+  box-sizing: border-box;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: clamp(48px, 8vw, 82px) clamp(20px, 5vw, 58px);
-  background: #fff;
-  color: #79543b;
-  text-align: left;
+  padding: 4.5rem 1.5rem;
+  color: var(--contacto-ink);
+  font-family: var(--font-secondary, 'Nunito', Arial, Helvetica, sans-serif);
+}
+
+.contacto-section *,
+.contacto-section *::before,
+.contacto-section *::after {
+  box-sizing: border-box;
 }
 
 .contacto-heading {
-  max-width: 640px;
-  margin: 0 auto 44px;
+  max-width: 680px;
+  margin: 0 auto 3rem;
   text-align: center;
 }
 
 .contacto-eyebrow {
-  display: inline-flex;
-  margin-bottom: 18px;
-  padding: 8px 18px;
-  border-radius: 999px;
-  color: #dc3d91;
-  background: #fbe5f1;
-  font-size: 14px;
-  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 0.65rem;
+  color: var(--contacto-blue);
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.contacto-heading h1,
+.contacto-faq > h2,
+.contacto-form-heading h2,
+.contacto-exito-card h2 {
+  margin: 0;
+  color: var(--contacto-ink);
+  font-family: var(--font-primary, 'Pacifico', cursive);
+  font-weight: 400;
+  line-height: 1.3;
 }
 
 .contacto-heading h1 {
-  margin: 0 0 16px;
-  color: #3b2116;
-  font-family: 'Pacifico', cursive;
-  font-size: clamp(38px, 4.2vw, 54px);
-  font-weight: 400;
-  line-height: 1.1;
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
 }
 
-.contacto-heading p {
-  font-size: 16px;
+.contacto-heading p,
+.contacto-form-heading p {
+  margin: 0.75rem 0 0;
+  color: var(--contacto-muted);
+  font-size: 1rem;
   line-height: 1.7;
 }
 
 .contacto-layout {
+  max-width: 1000px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: clamp(24px, 4vw, 44px);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
+  gap: 1.5rem;
 }
 
-.contacto-info {
+.contacto-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.contacto-info-grid {
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.contacto-info-card,
+.contacto-form-container,
+.faq-item {
+  border: 1px solid var(--contacto-border);
+  border-radius: 1rem;
+  background: var(--contacto-cream);
+  box-shadow: 0 8px 22px rgba(44, 26, 14, 0.06);
 }
 
 .contacto-info-card {
   display: flex;
+  min-width: 0;
   align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  border: 1px solid #ecd8b4;
-  border-radius: 14px;
-  background: #fffaf0;
+  gap: 0.75rem;
+  padding: 1rem;
 }
 
 .contacto-info-icon {
   display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
   place-items: center;
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(79, 42, 20, 0.12);
-  font-size: 22px;
+  border-radius: 0.85rem;
+  background: var(--contacto-soft-cream);
+  font-size: 1.25rem;
 }
 
 .contacto-info-card strong,
@@ -78,103 +117,357 @@
 }
 
 .contacto-info-card strong {
-  margin-bottom: 2px;
-  color: #2f2018;
-  font-size: 14px;
+  margin-bottom: 0.15rem;
+  font-size: 0.9rem;
 }
 
-.contacto-info-card span:not(.contacto-info-icon) {
-  font-size: 14px;
+.contacto-info-card div > span {
+  color: var(--contacto-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }
 
+.contacto-whatsapp-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--contacto-border);
+  border-radius: 1rem;
+  background: var(--contacto-soft-cream);
+}
+
+.whatsapp-text {
+  flex: 1 1 12rem;
+}
+
+.whatsapp-text strong {
+  display: block;
+  color: var(--contacto-ink);
+}
+
+.whatsapp-text p {
+  margin: 0.3rem 0 0;
+  color: var(--contacto-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.btn-whatsapp {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--contacto-gold);
+  color: var(--contacto-ink);
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-whatsapp:hover {
+  transform: translateY(-1px);
+  background: var(--contacto-gold-hover);
+}
+
+.contacto-mapa-container {
+  width: min(100%, 560px);
+  aspect-ratio: 1 / 0.95;
+  height: auto;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--contacto-border);
+  border-radius: 1rem;
+  box-shadow: 0 8px 22px rgba(44, 26, 14, 0.06);
+}
+
+.contacto-mapa-container iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.contacto-form-container {
+  min-width: 0;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.contacto-form-heading {
+  margin-bottom: 1.5rem;
+}
+
+.contacto-form-heading h2 {
+  font-size: 1.75rem;
+}
+
+.contacto-form-heading p {
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+}
+
 .contacto-form {
-  display: grid;
-  gap: 16px;
-  padding: clamp(20px, 3vw, 32px);
-  border: 1px solid #ead9bd;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(79, 42, 20, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
 .contacto-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
-.contacto-form label {
-  display: grid;
-  gap: 6px;
-  color: #3b2116;
-  font-size: 13px;
-  font-weight: 700;
+.form-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
-.contacto-form input,
-.contacto-form select,
-.contacto-form textarea {
+.form-group label {
+  color: var(--contacto-ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
   width: 100%;
-  padding: 11px 13px;
-  border: 1px solid #ead9bd;
-  border-radius: 10px;
-  background: #fffdf8;
-  color: #3b2116;
+  min-height: 2.9rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--contacto-border);
+  border-radius: 0.7rem;
+  background: #fff;
+  color: var(--contacto-ink);
   font: inherit;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.contacto-form textarea {
+.form-group textarea {
+  min-height: 8rem;
   resize: vertical;
-  min-height: 120px;
 }
 
-.contacto-form input:focus,
-.contacto-form select:focus,
-.contacto-form textarea:focus {
-  outline: 2px solid #2874bd;
-  outline-offset: 1px;
-  border-color: #2874bd;
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #8d7868;
+  opacity: 1;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--contacto-blue);
+  box-shadow: 0 0 0 3px rgba(42, 109, 181, 0.16);
 }
 
 .contacto-submit {
-  justify-self: start;
-  padding: 12px 28px;
-  border: 0;
-  border-radius: 12px;
-  background: #2874bd;
-  color: #fff;
-  font-weight: 700;
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  padding: 0.75rem 1.35rem;
+  border: 1px solid var(--contacto-gold);
+  border-radius: 0.75rem;
+  background: var(--contacto-gold);
+  color: var(--contacto-ink);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font: inherit;
+  font-weight: 800;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
-.contacto-submit:hover {
-  background: #185d9f;
+.contacto-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--contacto-gold-hover);
+  background: var(--contacto-gold-hover);
 }
 
-.contacto-exito {
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: #e6f6ea;
-  color: #1f6b35;
-  font-size: 14px;
+.contacto-submit:focus-visible,
+.btn-whatsapp:focus-visible,
+.faq-pregunta:focus-visible {
+  outline: 3px solid var(--contacto-blue);
+  outline-offset: 3px;
 }
 
-@media (max-width: 800px) {
+.contacto-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.contacto-exito-card {
+  padding: 2rem 0.5rem;
+  text-align: center;
+}
+
+.exito-icono {
+  margin-bottom: 0.75rem;
+  font-size: 3rem;
+}
+
+.contacto-exito-card h2 {
+  font-size: 1.75rem;
+}
+
+.contacto-exito-card p {
+  margin: 0.75rem auto 1.5rem;
+  color: var(--contacto-muted);
+  line-height: 1.6;
+}
+
+.btn-secundario {
+  border-color: var(--contacto-blue);
+  background: var(--contacto-blue);
+  color: #fff;
+}
+
+.btn-secundario:hover:not(:disabled) {
+  border-color: var(--contacto-blue-hover);
+  background: var(--contacto-blue-hover);
+}
+
+.contacto-faq {
+  margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--contacto-border);
+}
+
+.contacto-faq > h2 {
+  margin-bottom: 1.5rem;
+  font-size: clamp(1.8rem, 4vw, 2.3rem);
+  text-align: center;
+}
+
+.faq-list {
+  display: flex;
+  max-width: 820px;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 auto;
+}
+
+.faq-item {
+  overflow: hidden;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.faq-item.abierto {
+  border-color: var(--contacto-gold);
+  background: var(--contacto-soft-cream);
+}
+
+.faq-pregunta {
+  display: flex;
+  width: 100%;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--contacto-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.faq-pregunta-text {
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.faq-icon {
+  flex: 0 0 auto;
+  color: var(--contacto-blue);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.faq-respuesta {
+  margin: 0;
+  padding: 0 1.25rem 1.15rem;
+  color: var(--contacto-muted);
+  font-size: 0.925rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 900px) {
   .contacto-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contacto-sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .contacto-info-grid {
+    grid-row: span 2;
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 600px) {
+  .contacto-section {
+    padding: 3.25rem 1rem;
+  }
+
+  .contacto-heading {
+    margin-bottom: 2rem;
+  }
+
+  .contacto-info-grid,
+  .contacto-sidebar,
   .contacto-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contacto-info-grid {
+    grid-row: auto;
+  }
+
+  .contacto-whatsapp-card {
+    align-items: stretch;
+  }
+
+  .btn-whatsapp {
+    width: 100%;
+  }
+
+  .contacto-mapa-container {
+    width: 100%;
+    aspect-ratio: auto;
+    height: 220px;
   }
 
   .contacto-submit {
-    justify-self: stretch;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .contacto-faq {
+    margin-top: 3rem;
+    padding-top: 2rem;
+  }
+
+  .faq-pregunta {
+    padding: 0.9rem 1rem;
+  }
+
+  .faq-respuesta {
+    padding: 0 1rem 1rem;
   }
 }

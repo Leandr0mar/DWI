@@ -1,202 +1,256 @@
 # Cremissimo
 
-Plataforma web para la elaboracion y comercializacion de helados tradicionales y artesanales en Lima, Peru. El proyecto integra una interfaz de comercio electronico para clientes con una API REST orientada a la gestion del catalogo, sabores, usuarios e inventario.
+Aplicación web para presentar el catálogo y la oferta de Cremissimo, una heladería de productos artesanales. El repositorio contiene una API REST desarrollada con Spring Boot y una interfaz web desarrollada con React.
 
-## Contexto del negocio
+Este README describe la organización y el alcance implementado hasta el **segundo avance del proyecto**. Las entidades y módulos del backend ya contemplan áreas de negocio adicionales; su presencia en el código no implica que todos los flujos de compra, pago y administración estén integrados en la interfaz.
 
-Cremissimo busca ampliar su alcance en el mercado local mediante una experiencia digital para la venta y entrega de helados artesanales a domicilio.
-
-La plataforma contempla dos actores principales:
-
-- **Cliente:** consulta el catalogo de helados y sabores, agrega productos al carrito, revisa el total de su compra y puede continuar con futuros flujos de pedido, pago y entrega.
-- **Administrador:** gestiona la informacion operativa del negocio, incluyendo productos, sabores, precios, inventario, despachos, ventas y reseñas.
-
-El alcance descrito para el producto incluye metodos de pago, direcciones de entrega dentro de Lima, seguimiento de despachos, historial de ventas y moderacion de comentarios. Algunas de estas capacidades forman parte del objetivo funcional y pueden requerir implementacion adicional sobre la base actual.
-
-## Arquitectura
-
-El proyecto esta organizado en dos aplicaciones independientes:
+## Distribución del repositorio
 
 ```text
 DWI/
-|-- api/   API REST y persistencia
-|-- ui/    Aplicacion web para clientes
-|-- db.sql Script inicial de datos para MySQL
+├── api/       Backend Spring Boot: API REST, seguridad y persistencia
+├── ui/        Frontend React: sitio público, catálogo y flujos de usuario
+├── db.sql     Script SQL de apoyo para la base de datos y datos de prueba
+└── readme.md  Esta documentación
 ```
 
-El frontend consume la API mediante HTTP. El backend utiliza Spring Data JPA para consultar MySQL y expone recursos relacionados con helados y sabores.
+Los proyectos `api` y `ui` se ejecutan por separado. En desarrollo local, el frontend usa `http://localhost:8080` como base de la API y Vite suele servir la interfaz en `http://localhost:5173`.
 
-## Tecnologias utilizadas
-
-### Frontend (`ui`)
-
-- **React 19** para la construccion de la interfaz.
-- **TypeScript 6** para tipado estatico.
-- **Vite 8** como servidor de desarrollo y herramienta de build.
-- **TanStack Query 5** para peticiones, cache y estados de carga/error del catalogo.
-- **React Icons** para iconos de redes sociales y elementos de interfaz.
-- **CSS** para estilos responsive de header, hero, catalogo, carrito, video, testimonios y footer.
-- **React Compiler** mediante Babel para optimizacion del codigo React.
-- **Oxlint** para validacion de codigo.
+## Tecnologías
 
 ### Backend (`api`)
 
-- **Java 17**.
-- **Spring Boot 4.1.1**.
-- **Spring Web MVC** para la API REST.
-- **Spring Data JPA** para repositorios y persistencia.
-- **Hibernate ORM** como implementacion JPA.
-- **Spring Security** para autenticacion y autorizacion de rutas.
-- **Spring Validation** para validacion de datos.
-- **MySQL 8** como base de datos relacional.
-- **MySQL Connector/J** como driver JDBC.
-- **Lombok** para reducir codigo repetitivo en entidades y modelos.
-- **Spring Boot DevTools** para facilitar el desarrollo local.
-- **Maven Wrapper** para compilar y ejecutar el backend sin requerir una instalacion global de Maven.
+- Java 17 y Spring Boot 4.1.1.
+- Spring Web MVC para los endpoints REST.
+- Spring Data JPA / Hibernate y MySQL.
+- Spring Security con JWT en cookie `HttpOnly` y protección CSRF mediante cookie/token.
+- Spring Validation para validar solicitudes.
+- Lombok para reducir código repetitivo.
+- Maven Wrapper para compilar y ejecutar el proyecto.
 
-## Funcionalidades actuales
+### Frontend (`ui`)
 
-### Interfaz web
+- React 19 y TypeScript 6.
+- Vite 8 para desarrollo y compilación.
+- React Router para navegación.
+- TanStack Query para datos remotos y estado de consultas.
+- React Hook Form para formularios.
+- CSS responsive, React Icons y Lucide React.
+- React Compiler mediante Babel y Oxlint.
 
-- Header responsive con navegacion hacia las secciones principales.
-- Hero con slider automatico de imagenes de helados.
-- Catalogo de productos obtenido desde el backend.
-- Tarjetas de producto con nombre, sabores, precio e imagen.
-- Carrito de compras en memoria del navegador.
-- Modal de carrito con productos agregados y total.
-- Secciones de informacion institucional, video, testimonios, redes sociales y empresas afiliadas.
-- Diseno responsive para escritorio y dispositivos moviles.
+## Estructura del backend
 
-### API
+Ruta base del código Java: `api/src/main/java/com/dwi/api/`.
 
-Actualmente se encuentran implementados estos endpoints de consulta:
+```text
+api/
+├── pom.xml
+├── mvnw / mvnw.cmd
+├── docs/
+│   ├── AUTH.md
+│   └── MIGRACION_API_ANTIGUA.md
+├── legacy/
+│   └── api-antiguo/                 Código heredado de referencia
+└── src/
+    ├── main/
+    │   ├── java/com/dwi/api/
+    │   │   ├── ApiApplication.java
+    │   │   ├── config/              Seguridad y CORS
+    │   │   ├── common/
+    │   │   │   ├── audit/           Campos base de auditoría
+    │   │   │   ├── exception/       Manejo de errores y recurso no encontrado
+    │   │   │   └── response/        Respuestas comunes
+    │   │   ├── seguridad/
+    │   │   │   ├── controller/      Registro, login, sesión y CSRF
+    │   │   │   ├── dto/
+    │   │   │   ├── jwt/             JWT, filtro y cookie de autenticación
+    │   │   │   ├── model/
+    │   │   │   └── service/
+    │   │   ├── usuario/             Usuario base y repositorio
+    │   │   ├── cliente/             Registro, servicio, DTO y entidad Cliente
+    │   │   ├── administrador/       Entidad Administrador
+    │   │   ├── direccion/           Entidad Direccion
+    │   │   ├── zona/                Zonas y estado de pedidos
+    │   │   ├── catalogo/
+    │   │   │   ├── categoria/       Modelo y repositorio
+    │   │   │   ├── producto/        API, servicio, DTO, modelo e historial de stock
+    │   │   │   └── sabor/           API, servicio, DTO, modelo y repositorio
+    │   │   ├── carrito/             Modelos de carrito y sus detalles
+    │   │   ├── pedido/              Modelos de pedido, detalle e historial
+    │   │   └── integracion/stripe/  Registro relacionado con webhook de Stripe
+    │   └── resources/
+    │       └── application.properties
+    └── test/                        Pruebas automatizadas
+```
 
-| Metodo | Ruta | Descripcion | Acceso |
+El código de `legacy/api-antiguo` se conserva como referencia de migración. Las entidades actuales están organizadas según los paquetes nuevos; no se deben tratar los modelos heredados como modelos vigentes.
+
+## Estructura del frontend
+
+Ruta base del código de interfaz: `ui/src/`.
+
+```text
+ui/
+├── package.json
+├── vite.config.ts
+├── index.html
+└── src/
+    ├── App.tsx                     Rutas principales
+    ├── main.tsx                    Entrada de React
+    ├── App.css / index.css          Estilos globales
+    ├── services/
+    │   └── auth.ts                 Registro, login, sesión y logout
+    ├── pages/
+    │   ├── home/                   Inicio, Nosotros y Contactos
+    │   ├── productos/              Catálogo y detalle por UUID
+    │   ├── auth/                   Login, registro y recuperar contraseña
+    │   ├── compra/                 Carrito, checkout y pedido confirmado
+    │   ├── cliente/                Configuración de cliente
+    │   └── administrador/          Página de administración
+    ├── componets/                  Componentes reutilizables (nombre actual)
+    │   ├── auth/
+    │   ├── common/
+    │   │   ├── layout/             Layout y transición entre páginas
+    │   │   ├── header/
+    │   │   ├── footer/
+    │   │   └── carrito_flotante/   Carrito flotante y modal
+    │   ├── home/                   Hero, destacados, video y testimonios
+    │   ├── contacto/
+    │   ├── nosotros/
+    │   └── productos/              Hero, filtros y tarjeta de producto
+    └── assets/                     Imágenes, logos e iconos
+```
+
+La carpeta `componets` aparece escrita así en el proyecto y las importaciones dependen de ese nombre.
+
+## Navegación de la interfaz
+
+| Ruta | Página |
+| --- | --- |
+| `/` | Redirige a `/inicio` |
+| `/inicio` | Página principal |
+| `/nosotros` | Información institucional |
+| `/contactos` | Información y formulario de contacto |
+| `/productos` | Catálogo con filtros |
+| `/productos/:uuid` | Detalle del producto seleccionado |
+| `/login` | Inicio de sesión |
+| `/registro` | Registro de cliente |
+| `/recuperar-contrasena` | Solicitud de recuperación de contraseña |
+
+## API disponible
+
+Base local: `http://localhost:8080`.
+
+| Método | Endpoint | Descripción | Acceso |
 | --- | --- | --- | --- |
-| `GET` | `/api/helados/listar` | Lista todos los helados | Publico |
-| `GET` | `/api/sabores` | Lista los sabores activos | Protegido por defecto |
+| `GET` | `/api/v1/catalogo/productos` | Lista productos del catálogo | Público |
+| `GET` | `/api/v1/catalogo/productos/{uuid}` | Consulta el detalle por UUID | Público |
+| `GET` | `/api/v1/catalogo/sabores` | Lista sabores disponibles | Público |
+| `GET` | `/api/v1/auth/csrf` | Obtiene el token CSRF para solicitudes protegidas | Público |
+| `POST` | `/api/v1/auth/registro` | Registra un cliente | Público |
+| `POST` | `/api/v1/auth/login` | Inicia sesión y establece la cookie JWT | Público |
+| `GET` | `/api/v1/auth/me` | Devuelve el perfil de la sesión actual | Requiere autenticación |
+| `POST` | `/api/v1/auth/logout` | Cierra sesión y elimina la cookie JWT | Requiere autenticación |
+| `POST` | `/api/v1/auth/recuperar-password` | Responde de forma genérica a la solicitud | Público; flujo de recuperación pendiente |
+| `POST` | `/api/v1/admin/productos` | Crea un producto | Rol ADMIN |
+| `PUT` | `/api/v1/admin/productos/{id}` | Actualiza un producto | Rol ADMIN |
+| `DELETE` | `/api/v1/admin/productos/{id}` | Elimina un producto | Rol ADMIN |
 
-La API cuenta con entidades y capas para helados, sabores y usuarios, ademas de roles de cliente y administrador. La configuracion de seguridad permite CORS desde `http://localhost:5173`, deshabilita CSRF para el escenario actual de API y protege las rutas no declaradas publicas.
+Los productos exponen, entre otros datos, UUID, SKU, nombre, descripción, precio base, categoría, sabores, imagen, peso/volumen y tipo de presentación. El detalle de los campos de solicitud y respuesta está en los DTO del paquete `catalogo.producto`.
 
-## Requisitos previos
+## Funcionalidades y alcance actual
 
-- Node.js y npm.
+- Sitio público con páginas de inicio, información institucional, contacto y catálogo.
+- Catálogo y detalle de producto conectados a los endpoints públicos del backend.
+- Filtros de catálogo por categoría, orden de precio, nombre y búsqueda por nombre.
+- Registro e inicio de sesión de clientes.
+- Autenticación con JWT almacenado en cookie `HttpOnly`; las operaciones de escritura usan CSRF.
+- Carrito flotante en la interfaz, con agrupación de productos iguales, modificación de cantidad, eliminación y subtotal.
+- Diseño adaptable a escritorio y móvil, transiciones de navegación y elementos visuales del proyecto.
+
+El carrito de la interfaz aún no equivale a un pedido persistido en el backend. Las entidades de pedido, carrito, Stripe y las páginas de compra/administración constituyen estructura de dominio o pantallas en desarrollo; el checkout, el cobro y la administración completa no deben considerarse flujos integrados solo por la existencia de esos archivos.
+
+## Requisitos
+
 - Java 17.
-- MySQL 8 o compatible.
-- MySQL ejecutandose localmente.
+- MySQL compatible con el conector del proyecto.
+- Node.js y npm compatibles con la versión de Vite del proyecto.
+- PowerShell en Windows (o Bash para usar el wrapper Unix).
 
-## Configuracion de la base de datos
+## Configuración y ejecución local
 
-Crea la base de datos `cremissimo` y configura las credenciales en:
+### 1. Base de datos y backend
 
-`api/src/main/resources/application.properties`
+Crea la base de datos `cremissimo` en MySQL. La conexión está configurada en `api/src/main/resources/application.properties`; revisa y ajusta la URL, usuario y contraseña para tu instalación antes de iniciar. El archivo `db.sql` en la raíz del repositorio puede servir como apoyo para preparar datos de prueba.
 
-Configuracion actual de referencia:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/cremissimo?useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=root
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-```
-
-El archivo [db.sql](db.sql) contiene la creacion de la base de datos y datos iniciales para sabores y helados. Las tablas pueden ser creadas por Hibernate al iniciar la aplicacion cuando `spring.jpa.hibernate.ddl-auto=update` esta habilitado.
-
-## Ejecucion local
-
-### Backend
-
-Desde la carpeta `api`:
-
-```bash
-./mvnw spring-boot:run
-```
-
-En Windows:
+Desde PowerShell:
 
 ```powershell
+cd C:\Repositorios\DWI\api
 .\mvnw.cmd spring-boot:run
 ```
 
-La API queda disponible en `http://localhost:8080`.
+En Bash:
 
-Para ejecutar las pruebas:
+```bash
+cd api
+./mvnw spring-boot:run
+```
+
+Para compilar o ejecutar pruebas:
 
 ```powershell
+.\mvnw.cmd compile
 .\mvnw.cmd test
 ```
 
-### Frontend
+La API escucha en `http://localhost:8080` con la configuración local habitual.
 
-Desde la carpeta `ui`:
+### 2. Frontend
 
-```bash
+En otra terminal:
+
+```powershell
+cd C:\Repositorios\DWI\ui
 npm install
 npm run dev
 ```
 
-La aplicacion queda disponible normalmente en `http://localhost:5173`.
+Vite mostrará la dirección local, normalmente `http://localhost:5173`.
 
-Comandos disponibles:
+La URL del backend se puede sobrescribir con `VITE_API_URL`. Por ejemplo, crea `ui/.env.local` con:
+
+```dotenv
+VITE_API_URL=http://localhost:8080
+```
+
+Comandos disponibles en `ui`:
 
 ```bash
-npm run build   # Verificacion TypeScript y build de produccion
-npm run lint    # Analisis estatico con Oxlint
-npm run preview # Servir el build localmente
+npm run dev      # Servidor de desarrollo
+npm run build    # Comprobación TypeScript y build de producción
+npm run lint     # Análisis estático
+npm run preview  # Vista local del build
 ```
 
-## Variables y configuracion importante
+## Configuración de autenticación y seguridad
 
-La URL del backend se encuentra actualmente definida en el componente de productos:
+La configuración del backend está en `api/src/main/resources/application.properties`. La cookie de autenticación es `HttpOnly`, por lo que JavaScript del frontend no lee el JWT. Para solicitudes `POST`, el frontend primero solicita CSRF y luego envía el token en `X-XSRF-TOKEN`.
 
-```text
-http://localhost:8080/api/helados/listar
-```
+| Variable | Uso | Valor predeterminado local |
+| --- | --- | --- |
+| `JWT_SECRET` | Secreto para firmar JWT | Vacío; se genera una clave aleatoria al iniciar |
+| `JWT_EXPIRATION_MS` | Duración del JWT en milisegundos | `86400000` (24 horas) |
+| `AUTH_COOKIE_NAME` | Nombre de la cookie de autenticación | `auth_token` |
+| `AUTH_COOKIE_SECURE` | Exige HTTPS para enviar cookies | `false` |
+| `AUTH_COOKIE_SAME_SITE` | Política `SameSite` de la cookie | `Lax` |
+| `CORS_ALLOWED_ORIGINS` | Orígenes frontend permitidos, separados por comas | `http://localhost:5173,http://127.0.0.1:5173` |
 
-Para desplegar el proyecto en otro entorno, conviene trasladar esta URL a una variable de entorno de Vite, por ejemplo `VITE_API_URL`, y configurar tambien el origen permitido en Spring Security.
+Para una demostración local se puede omitir `JWT_SECRET`; como la clave temporal cambia al reiniciar, las cookies existentes dejan de ser válidas. En un entorno desplegado se debe configurar un secreto estable y privado, habilitar `AUTH_COOKIE_SECURE=true` bajo HTTPS y permitir solo los orígenes reales del frontend. No se debe publicar un secreto JWT ni credenciales reales de base de datos en el repositorio.
 
-## Estructura principal
+El flujo y las notas detalladas de autenticación están en [`api/docs/AUTH.md`](api/docs/AUTH.md).
 
-```text
-api/src/main/java/com/dwi/api/
-|-- config/                 Configuracion de seguridad y CORS
-|-- helado/                 Entidad, controlador, servicio y repositorio
-|   |-- enums/              Estados y tipos de presentacion
-|   `-- sabor/              Entidad, controlador y repositorio de sabores
-|-- usuario/                Entidad, servicio y repositorio de usuarios
-|   |-- administrador/      Modelo de administrador
-|   |-- cliente/            Modelo de cliente y direccion
-|   `-- rol/                Modelo de roles
-`-- ApiApplication.java     Punto de entrada de Spring Boot
+## Documentación adicional
 
-ui/src/
-|-- App.tsx                 Composicion principal y estado del carrito
-|-- componets/header/       Navegacion y acciones del header
-|-- componets/hero/         Hero y slider de imagenes
-|-- componets/productos/    Consulta y tarjetas del catalogo
-|-- componets/carrito/      Modal del carrito
-|-- componets/nosotros/     Informacion institucional
-|-- componets/testimonios/  Testimonios
-`-- componets/footer/       Pie de pagina y enlaces institucionales
-```
-
-## Roadmap funcional
-
-Para completar el alcance de comercio electronico planteado para Cremissimo, las siguientes capacidades pueden implementarse sobre la base actual:
-
-- Autenticacion y registro de clientes y administradores.
-- CRUD administrativo para helados, sabores, precios e inventario.
-- Persistencia de carritos y ordenes.
-- Integracion de metodos de pago.
-- Gestion de direcciones y zonas de entrega en Lima.
-- Seguimiento del estado de los despachos.
-- Historial de ventas y dashboard administrativo.
-- Registro y moderacion de reseñas.
-- Separacion de configuracion por entornos y variables seguras para credenciales.
-
-## Estado del proyecto
-
-El proyecto se encuentra en desarrollo. La integracion base entre el frontend React, la API Spring Boot y MySQL esta operativa para la consulta del catalogo y la carga inicial de productos.
+- [Autenticación y configuración local](api/docs/AUTH.md)
+- [Migración desde la API antigua](api/docs/MIGRACION_API_ANTIGUA.md)

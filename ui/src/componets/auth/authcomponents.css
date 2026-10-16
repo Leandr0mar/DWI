@@ -369,6 +369,13 @@
   gap: 0.9rem;
 }
 
+.auth-password-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.9rem;
+  width: 100%;
+}
+
 .auth-success {
   padding: 1.75rem;
   border: 1px solid var(--auth-border);

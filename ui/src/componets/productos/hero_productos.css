@@ -1,0 +1,218 @@
+.hero-productos {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: clamp(440px, 64vh, 680px);
+  overflow: hidden;
+  isolation: isolate;
+  background: #493225;
+}
+
+.hero-productos-fondos,
+.hero-productos-velo {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+}
+
+.hero-productos-fondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 48%;
+  opacity: 0;
+  transform: scale(1.035);
+  transition: opacity 900ms ease, transform 6.5s ease-out;
+}
+
+.hero-productos-fondo.activo {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.hero-productos-velo {
+  background: linear-gradient(90deg, rgb(29 19 13 / 78%) 0%, rgb(45 28 17 / 60%) 48%, rgb(45 28 17 / 12%) 100%);
+}
+
+.hero-productos-contenido {
+  box-sizing: border-box;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 5.5rem 2rem;
+  color: #fff;
+}
+
+.hero-productos-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.48rem 0.9rem;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 999px;
+  background: rgb(255 248 232 / 14%);
+  color: #ffe5a3;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-productos-contenido h1 {
+  max-width: 720px;
+  margin: 1.25rem 0 0;
+  color: #fff;
+  font-family: var(--font-primary, Georgia, serif);
+  font-size: clamp(2.8rem, 6vw, 5.3rem);
+  font-weight: 400;
+  line-height: 1.12;
+  text-shadow: 0 3px 16px rgb(20 12 8 / 42%);
+}
+
+.hero-productos-contenido p {
+  max-width: 580px;
+  margin: 1.15rem 0 0;
+  color: rgb(255 255 255 / 92%);
+  font-size: clamp(1rem, 1.6vw, 1.18rem);
+  line-height: 1.7;
+  text-shadow: 0 2px 9px rgb(20 12 8 / 50%);
+}
+
+.hero-productos-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.8rem;
+}
+
+.hero-productos-boton-principal,
+.hero-productos-boton-secundario {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.4rem;
+  border-radius: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.hero-productos-boton-principal {
+  border: 1px solid #f9a826;
+  background: #f9a826;
+  color: #2c1a0e;
+  box-shadow: 0 8px 20px rgb(20 12 8 / 18%);
+}
+
+.hero-productos-boton-principal:hover {
+  border-color: #e09012;
+  background: #e09012;
+  transform: translateY(-2px);
+}
+
+.hero-productos-boton-secundario {
+  border: 1px solid rgb(255 255 255 / 75%);
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+
+.hero-productos-boton-secundario:hover {
+  border-color: #f9a826;
+  background: rgb(255 255 255 / 16%);
+  transform: translateY(-2px);
+}
+
+.hero-productos-controles {
+  position: absolute;
+  right: max(2rem, calc((100vw - 1180px) / 2));
+  bottom: 1.65rem;
+  display: flex;
+  gap: 0.55rem;
+}
+
+.hero-productos-punto {
+  width: 0.72rem;
+  height: 0.72rem;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.hero-productos-punto:hover,
+.hero-productos-punto:focus-visible {
+  transform: scale(1.2);
+}
+
+.hero-productos-punto.activo {
+  background: #f9a826;
+  border-color: #f9a826;
+}
+
+@media (max-width: 640px) {
+  .hero-productos {
+    min-height: 540px;
+  }
+
+  .hero-productos-contenido {
+    padding: 4rem 1.25rem 5rem;
+  }
+
+  .hero-productos-velo {
+    background: linear-gradient(90deg, rgb(29 19 13 / 78%), rgb(45 28 17 / 48%));
+  }
+
+  .hero-productos-controles {
+    right: 1.25rem;
+    bottom: 1.2rem;
+  }
+
+  .hero-productos-acciones {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero-productos-boton-principal,
+  .hero-productos-boton-secundario {
+    box-sizing: border-box;
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .hero-productos-contenido {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .hero-productos-etiqueta {
+    font-size: 0.68rem;
+  }
+
+  .hero-productos-contenido h1 {
+    font-size: clamp(2.35rem, 12vw, 2.8rem);
+  }
+
+  .hero-productos-boton-principal,
+  .hero-productos-boton-secundario {
+    padding-inline: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-productos-fondo,
+  .hero-productos-boton-principal,
+  .hero-productos-boton-secundario,
+  .hero-productos-punto {
+    transition: none;
+  }
+
+  .hero-productos-fondo {
+    transform: none;
+  }
+}

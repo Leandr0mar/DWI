@@ -143,8 +143,10 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(
               <button
                 type="button"
                 className="auth-eye-btn"
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => setVisible((current) => !current)}
                 aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-pressed={visible}
               >
                 <EyeIcon crossed={visible} />
               </button>

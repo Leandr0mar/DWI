@@ -7,8 +7,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.URL;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -55,6 +57,18 @@ public class Producto extends BaseEntity {
     @Min(value = 0, message = "El stock no puede ser negativo")
     @Column(name = "stock_disponible", nullable = false)
     private Integer stockDisponible = 0;
+
+    @URL(message = "La URL de la imagen no es válida")
+    @Column(name = "url_imagen", length = 500)
+    private String urlImagen;
+
+    @Size(max = 30, message = "El peso o volumen no debe superar los 30 caracteres")
+    @Column(name = "peso_volumen", length = 30)
+    private String pesoVolumen;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_presentacion", length = 30)
+    private TipoPresentacion tipoPresentacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_categoria", nullable = false)

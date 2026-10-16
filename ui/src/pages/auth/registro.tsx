@@ -26,7 +26,8 @@ export default function Registro() {
     watch,
     formState: { errors },
   } = useForm({
-    mode: "onChange", // Valida en tiempo real mientras el usuario escribe
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   const password = watch("register-password", "");
@@ -183,7 +184,7 @@ export default function Registro() {
             />
           </div>
           
-          <div className="auth-form-grid">
+          <div className="auth-password-fields">
             <div style={{ width: "100%" }}>
               <Field
                 id="register-password"
@@ -205,21 +206,23 @@ export default function Registro() {
                 })}
                 onFocus={() => setPasswordFocus(true)}
               />
-              {passwordFocus && password && <PasswordStrengthIndicator />}
+              {passwordFocus && <PasswordStrengthIndicator />}
             </div>
 
-            <Field
-              id="confirm-password"
-              label="Confirmar contraseña"
-              type="password"
-              placeholder="Repite tu contraseña"
-              autoComplete="new-password"
-              error={errors["confirm-password"]?.message as string}
-              {...register("confirm-password", {
-                required: "Confirma tu contraseña",
-                validate: (value) => value === password || "Las contraseñas no coinciden",
-              })}
-            />
+            <div style={{ width: "100%" }}>
+              <Field
+                id="confirm-password"
+                label="Confirmar contraseña"
+                type="password"
+                placeholder="Repite tu contraseña"
+                autoComplete="new-password"
+                error={errors["confirm-password"]?.message as string}
+                {...register("confirm-password", {
+                  required: "Confirma tu contraseña",
+                  validate: (value) => value === password || "Las contraseñas no coinciden",
+                })}
+              />
+            </div>
           </div>
           
           {registration.isError && (

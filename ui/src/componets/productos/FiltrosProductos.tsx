@@ -1,108 +1,77 @@
 import './filtros_productos.css'
 
-export type Orden = 'default' | 'precio-asc' | 'precio-desc' | 'nombre'
+export type Orden = 'default' | 'precio-asc' | 'precio-desc' | 'nombre-asc' | 'nombre-desc'
 
 export interface Filtros {
-  busqueda: string
-  sabor: string
-  precioMin: string
-  precioMax: string
+  nombre: string
+  categoria: string
   orden: Orden
+  disponibilidad: 'todos' | 'disponibles' | 'agotados'
 }
 
 export const filtrosIniciales: Filtros = {
-  busqueda: '',
-  sabor: '',
-  precioMin: '',
-  precioMax: '',
+  nombre: '',
+  categoria: '',
   orden: 'default',
+  disponibilidad: 'todos',
 }
 
 interface Props {
   filtros: Filtros
-  sabores: string[]
+  categorias: string[]
   total?: number
   onChange: (filtros: Filtros) => void
 }
 
-function FiltrosProductos({ filtros, sabores, total, onChange }: Props) {
+function FiltrosProductos({ filtros, categorias, total, onChange }: Props) {
   const actualizar = (cambio: Partial<Filtros>) => onChange({ ...filtros, ...cambio })
-
-  const hayFiltros =
-    filtros.busqueda !== '' ||
-    filtros.sabor !== '' ||
-    filtros.precioMin !== '' ||
-    filtros.precioMax !== '' ||
-    filtros.orden !== 'default'
+  const hayFiltros = filtros.nombre !== '' || filtros.categoria !== '' || filtros.orden !== 'default' || filtros.disponibilidad !== 'todos'
 
   return (
     <div className="filtros" role="search" aria-label="Filtros de productos">
       <label className="filtros-campo filtros-busqueda">
-        Buscar
+        Buscar por nombre
         <input
           type="search"
-          value={filtros.busqueda}
-          onChange={(e) => actualizar({ busqueda: e.target.value })}
-          placeholder="Ej. fresa, chocolate..."
+          value={filtros.nombre}
+          onChange={(event) => actualizar({ nombre: event.target.value })}
+          placeholder="Escribe el nombre del producto"
         />
       </label>
 
       <label className="filtros-campo">
-        Sabor
-        <select value={filtros.sabor} onChange={(e) => actualizar({ sabor: e.target.value })}>
-          <option value="">Todos</option>
-          {sabores.map((sabor) => (
-            <option key={sabor} value={sabor}>
-              {sabor}
-            </option>
-          ))}
+        Categoría
+        <select value={filtros.categoria} onChange={(event) => actualizar({ categoria: event.target.value })}>
+          <option value="">Todas las categorías</option>
+          {categorias.map((categoria) => <option key={categoria} value={categoria}>{categoria}</option>)}
         </select>
       </label>
 
-      <div className="filtros-campo">
-        <span>Precio (S/.)</span>
-        <div className="filtros-precio">
-          <input
-            type="number"
-            min="0"
-            step="0.5"
-            value={filtros.precioMin}
-            onChange={(e) => actualizar({ precioMin: e.target.value })}
-            placeholder="Mín"
-            aria-label="Precio mínimo"
-          />
-          <span aria-hidden="true">–</span>
-          <input
-            type="number"
-            min="0"
-            step="0.5"
-            value={filtros.precioMax}
-            onChange={(e) => actualizar({ precioMax: e.target.value })}
-            placeholder="Máx"
-            aria-label="Precio máximo"
-          />
-        </div>
-      </div>
-
       <label className="filtros-campo">
         Ordenar por
-        <select value={filtros.orden} onChange={(e) => actualizar({ orden: e.target.value as Orden })}>
-          <option value="default">Recomendados</option>
-          <option value="precio-asc">Menor precio</option>
-          <option value="precio-desc">Mayor precio</option>
-          <option value="nombre">Nombre A-Z</option>
+        <select value={filtros.orden} onChange={(event) => actualizar({ orden: event.target.value as Orden })}>
+          <option value="default">Orden del catálogo</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+          <option value="nombre-asc">Nombre: A–Z</option>
+          <option value="nombre-desc">Nombre: Z–A</option>
+        </select>
+      </label>
+
+      <label className="filtros-campo">
+        Disponibilidad
+        <select value={filtros.disponibilidad} onChange={(event) => actualizar({ disponibilidad: event.target.value as Filtros['disponibilidad'] })}>
+          <option value="todos">Todos</option>
+          <option value="disponibles">Disponibles</option>
+          <option value="agotados">Agotados</option>
         </select>
       </label>
 
       <div className="filtros-pie">
         <span className="filtros-total" aria-live="polite">
-          {total === undefined ? '' : `${total} ${total === 1 ? 'helado' : 'helados'}`}
+          {total === undefined ? '' : `${total} ${total === 1 ? 'producto' : 'productos'}`}
         </span>
-        {hayFiltros && (
-          <button type="button" className="filtros-limpiar" onClick={() => onChange(filtrosIniciales)}>
-            Limpiar filtros
-          </button>
-        )}
+        {hayFiltros && <button type="button" className="filtros-limpiar" onClick={() => onChange(filtrosIniciales)}>Limpiar filtros</button>}
       </div>
     </div>
   )

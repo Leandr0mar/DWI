@@ -12,19 +12,74 @@
   padding: 2.5rem 1.5rem;
 }
 
+.detalle-estado {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem;
+  color: #2c2c2c;
+  text-align: center;
+}
+
+.detalle-enlace-volver {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: #d97900;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.detalle-enlace-volver:hover {
+  color: #b85f00;
+}
+
+.detalle-datos-modelo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin: 1.5rem 0;
+}
+
+.placeholder-etiqueta {
+  color: #8c7355;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.detalle-datos-modelo > div {
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid #ead9bd;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.detalle-datos-modelo dt {
+  margin-bottom: 0.25rem;
+  color: #765d4d;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.detalle-datos-modelo dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
 /* Grid Principal Superior */
 .detalle-grid-superior {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   gap: 3.5rem;
-  align-items: start;
+  align-items: center;
 }
 
 /* Columna de Imagen */
 .detalle-col-imagen {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2.5rem;
 }
 
 .detalle-imagen-principal-wrapper {
@@ -90,6 +145,38 @@
   opacity: 1;
 }
 
+.miniatura-placeholder {
+  min-width: 0;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  padding: 0.35rem;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: #f4f0ec;
+  color: #8b8177;
+  font-size: 0.7rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, opacity 0.2s;
+}
+
+.miniatura-placeholder img {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.miniatura-placeholder.active {
+  border-color: #2563eb;
+}
+
+.miniatura-placeholder:not(.active) {
+  opacity: 0.8;
+}
+
 /* Columna de Información */
 .detalle-linea-header {
   display: flex;
@@ -130,6 +217,10 @@
 .estrellas {
   color: #f59e0b;
   letter-spacing: 2px;
+}
+
+.estrellas-placeholder {
+  color: #c6b9a8;
 }
 
 .rating-num {
@@ -232,10 +323,17 @@
   color: #1d4ed8;
 }
 
+.pres-btn-futuro {
+  cursor: not-allowed;
+  border-style: dashed;
+  background: #faf9f7;
+  opacity: 0.75;
+}
+
 /* Acciones Compra */
 .detalle-acciones-compra {
   display: grid;
-  grid-template-columns: auto 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
   margin-bottom: 1.5rem;
   align-items: center;
@@ -243,6 +341,10 @@
 
 .contador-cantidad-box {
   display: flex;
+  width: fit-content;
+  min-width: 116px;
+  justify-self: start;
+  justify-content: center;
   border: 1px solid #dcd6d0;
   border-radius: 10px;
   overflow: hidden;
@@ -253,7 +355,7 @@
 .btn-cont {
   background: transparent;
   border: none;
-  padding: 0 1rem;
+  padding: 0 0.8rem;
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
@@ -288,6 +390,11 @@
   background: #f0ebe6;
 }
 
+.btn-accion-cesta:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .btn-accion-comprar {
   background: #2563eb;
   color: #fff;
@@ -301,6 +408,16 @@
 
 .btn-accion-comprar:hover {
   background: #1d4ed8;
+}
+
+.btn-accion-comprar:disabled,
+.share-icons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.contador-cantidad-box:has(.btn-cont:disabled) {
+  opacity: 0.7;
 }
 
 /* Beneficios */
@@ -417,6 +534,28 @@
   background: #f4f0ec;
 }
 
+.rel-img-box img {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.rel-img-placeholder {
+  min-height: 190px;
+  display: grid;
+  place-items: center;
+  color: #8b8177;
+  background: repeating-linear-gradient(135deg, #f4f0ec, #f4f0ec 12px, #eee8df 12px, #eee8df 24px);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.rel-card-placeholder:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
 .tag-card-s {
   position: absolute;
   top: 12px;
@@ -474,8 +613,8 @@
 }
 
 .btn-volver-catalogo {
-  background: #2563eb;
-  color: #fff;
+  background: #f9a826;
+  color: #2c1a0e;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -484,16 +623,32 @@
   margin-top: 1rem;
 }
 
+.btn-volver-catalogo:hover {
+  background: #e09012;
+}
+
+.btn-volver-catalogo {
+  display: inline-block;
+  text-decoration: none;
+}
+
 /* Responsivo para móviles */
 @media (max-width: 900px) {
   .detalle-grid-superior {
     grid-template-columns: 1fr;
     gap: 2rem;
+    align-items: start;
   }
   .detalle-acciones-compra {
     grid-template-columns: 1fr;
   }
   .detalle-beneficios-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .detalle-datos-modelo {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

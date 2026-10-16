@@ -1,292 +1,211 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import Header from '../../componets/common/header/Header';
-import Footer from '../../componets/common/footer/Footer'; // O la ruta donde tengas tu footer
-import './productos-detalle.css';
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { useLayout } from '../../componets/common/layout/Layout'
+import type { Producto } from '../../componets/productos/ProductoCard'
+import imagenProductoPredeterminada from '../../assets/productos_destacados/pd_1.jpg'
+import './productos-detalle.css'
 
-interface HeladoDetalle {
-  idHelado: number;
-  nombre: string;
-  precio: number;
-  descripcion: string;
-  stock: number;
-  urlImagen: string;
-  estado: string;
-  categoria: string;
-  pesoVolumen?: string;
-  tipoPresentacion?: string;
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+
+interface ProductoDetalle {
+  id: number
+  uuid: string
+  sku: string
+  nombre: string
+  descripcion: string | null
+  precioBase: number
+  maxSabores: number
+  stockDisponible: number
+  categoria: string
+  sabores: string[]
+  urlImagen: string | null
+  pesoVolumen: string | null
+  tipoPresentacion: string | null
+}
+
+async function fetchProducto(uuid: string): Promise<ProductoDetalle> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/catalogo/productos/${encodeURIComponent(uuid)}`,
+  )
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('No encontramos ese producto en el catálogo.')
+    throw new Error(`No se pudo cargar el producto (HTTP ${response.status}).`)
+  }
+  return response.json() as Promise<ProductoDetalle>
 }
 
 export default function ProductosDetalle() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const { uuid } = useParams<{ uuid: string }>()
+  const { agregarAlCarrito } = useLayout()
+  const [cantidad, setCantidad] = useState(1)
+  const [imagenActiva, setImagenActiva] = useState(0)
+  const productoQuery = useQuery({
+    queryKey: ['producto-catalogo', uuid],
+    queryFn: () => fetchProducto(uuid!),
+    enabled: Boolean(uuid),
+    retry: false,
+  })
 
-  const [producto, setProducto] = useState<HeladoDetalle | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [cantidad, setCantidad] = useState<number>(1);
-  const [presentacionSeleccionada, setPresentacionSeleccionada] = useState<string>('1 LITRO');
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (id) {
-      fetch(`http://localhost:8080/api/helados/${id}`)
-        .then((res) => {
-          if (!res.ok) throw new Error('No se pudo encontrar el producto');
-          return res.json();
-        })
-        .then((data) => {
-          setProducto(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error al cargar el detalle:", err);
-          setLoading(false);
-        });
-    }
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="detalle-page">
-        <Header />
-        <div style={{ textAlign: 'center', padding: '5rem', fontSize: '1.2rem', color: '#666' }}>
-          Cargando detalles del helado artesanal...
-        </div>
-      </div>
-    );
+  if (productoQuery.isPending) {
+    return <div className="detalle-estado" role="status">Cargando detalles del producto…</div>
   }
 
-  if (!producto) {
+  if (productoQuery.isError || !productoQuery.data) {
     return (
-      <div className="detalle-page">
-        <Header />
-        <div style={{ textAlign: 'center', padding: '5rem' }}>
-          <h2>Producto no encontrado</h2>
-          <button onClick={() => navigate('/productos')} className="btn-volver-catalogo">
-            Volver al catálogo
-          </button>
-        </div>
+      <div className="detalle-estado" role="alert">
+        <h1>Producto no disponible</h1>
+        <p>{productoQuery.error instanceof Error ? productoQuery.error.message : 'No se pudo cargar el producto.'}</p>
+        <Link to="/productos" className="btn-volver-catalogo">Volver al catálogo</Link>
       </div>
-    );
+    )
+  }
+
+  const producto = productoQuery.data
+  const imagen = producto.urlImagen?.trim() || imagenProductoPredeterminada
+  const sabores = producto.sabores.length > 0 ? producto.sabores.join(', ') : 'Sin sabores asignados'
+  const productoDisponible = producto.stockDisponible > 0
+
+  function agregarProducto() {
+    const itemCarrito: Producto = {
+      id: producto.id,
+      nombre: producto.nombre,
+      sabor: sabores,
+      precio: producto.precioBase,
+      imagen,
+    }
+
+    for (let unidad = 0; unidad < cantidad; unidad += 1) {
+      agregarAlCarrito(itemCarrito)
+    }
   }
 
   return (
     <div className="detalle-page">
-      {/* Navbar original mantenido */}
-      <Header />
-
       <main className="detalle-main-container">
-        {/* Contenedor principal de producto (2 columnas estilo la captura) */}
+        <Link to="/productos" className="detalle-enlace-volver">← Volver al catálogo</Link>
+
         <div className="detalle-grid-superior">
-          
-          {/* Columna Izquierda: Imágenes */}
           <div className="detalle-col-imagen">
             <div className="detalle-imagen-principal-wrapper">
-              <span className="badge-artesanal">100% Artesanal</span>
-              <span className="badge-temporada">Sabor de Temporada</span>
-              <img 
-                src={producto.urlImagen} 
-                alt={producto.nombre} 
-                className="detalle-imagen-principal" 
+              <img
+                src={imagen}
+                alt={producto.nombre}
+                className="detalle-imagen-principal"
+                onError={(event) => { event.currentTarget.src = imagenProductoPredeterminada }}
               />
+              <span className="badge-artesanal">{producto.categoria || 'Catálogo'}</span>
+              <span className="badge-temporada">{productoDisponible ? 'Disponible' : 'Agotado'}</span>
             </div>
 
-            {/* Miniaturas de galería simuladas / estéticas */}
-            <div className="detalle-galeria-minaturas">
-              <img src={producto.urlImagen} alt="Vista 1" className="miniatura active" />
-              <img src={producto.urlImagen} alt="Vista 2" className="miniatura" />
-              <img src={producto.urlImagen} alt="Vista 3" className="miniatura" />
-              <img src={producto.urlImagen} alt="Vista 4" className="miniatura" />
+            <div className="detalle-galeria-minaturas" aria-label="Galería del producto">
+              {[0, 1, 2, 3].map((indice) => (
+                <button
+                  key={indice}
+                  type="button"
+                  className={`miniatura-placeholder${imagenActiva === indice ? ' active' : ''}`}
+                  onClick={() => setImagenActiva(indice)}
+                  aria-label={indice === 0 ? 'Ver imagen disponible' : `Imagen ${indice + 1}, próximamente`}
+                  aria-pressed={imagenActiva === indice}
+                >
+                  {indice === 0
+                    ? <img src={imagen} alt="" onError={(event) => { event.currentTarget.src = imagenProductoPredeterminada }} />
+                    : <span>Próximamente</span>}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Columna Derecha: Información y compra */}
           <div className="detalle-col-info">
             <div className="detalle-linea-header">
-              <span className="detalle-linea-frutal">LÍNEA ARTESANAL DE GRANJA</span>
-              <span className="detalle-sku">SKU: CRM-BLU-{producto.idHelado}</span>
+              <span className="detalle-linea-frutal">{producto.categoria || 'Producto'}</span>
+              <span className="detalle-sku">SKU: {producto.sku}</span>
             </div>
 
             <h1 className="detalle-titulo-producto">{producto.nombre}</h1>
 
-            <div className="detalle-rating-box">
-              <span className="estrellas">★★★★★</span>
-              <span className="rating-num">4.9</span>
-              <span className="rating-reviews">· 34 valoraciones de clientes</span>
+            <div className="detalle-rating-box" aria-label="Valoraciones próximamente">
+              <span className="estrellas estrellas-placeholder" aria-hidden="true">☆☆☆☆☆</span>
+              <span className="rating-reviews">Valoraciones próximamente</span>
             </div>
 
             <div className="detalle-precio-box">
-              <span className="precio-actual">S/ {producto.precio.toFixed(2)}</span>
-              <span className="iva-tag">IVA incluido</span>
-              <span className="litro-tag">{producto.pesoVolumen || '1 Litro Familiar'}</span>
+              <span className="precio-actual">S/ {producto.precioBase.toFixed(2)}</span>
+              <span className="iva-tag">Precio base</span>
+              {producto.pesoVolumen && <span className="litro-tag">{producto.pesoVolumen}</span>}
             </div>
 
             <p className="detalle-descripcion-texto">
-              {producto.descripcion}
+              {producto.descripcion || 'La descripción de este producto estará disponible próximamente.'}
             </p>
 
-            {/* Selector de presentaciones */}
-            <div className="presentacion-seccion">
-              <label className="presentacion-label-titulo">
-                SELECCIONA LA PRESENTACIÓN <span>{producto.pesoVolumen || '1 LITRO (950 gr)'}</span>
-              </label>
+            <section className="presentacion-seccion" aria-labelledby="presentacion-titulo">
+              <div className="presentacion-label-titulo">
+                <span id="presentacion-titulo">Presentación disponible</span>
+                <span className="placeholder-etiqueta">Otras opciones próximamente</span>
+              </div>
               <div className="presentacion-opciones-grid">
-                <button 
-                  className={`pres-btn ${presentacionSeleccionada === '1 BOLA' ? 'active' : ''}`}
-                  onClick={() => setPresentacionSeleccionada('1 BOLA')}
-                >
-                  <strong>1 BOLA</strong>
-                  <span>130 gr</span>
-                </button>
-                <button 
-                  className={`pres-btn ${presentacionSeleccionada === '2 BOLAS' ? 'active' : ''}`}
-                  onClick={() => setPresentacionSeleccionada('2 BOLAS')}
-                >
-                  <strong>2 BOLAS</strong>
-                  <span>250 gr</span>
-                </button>
-                <button 
-                  className={`pres-btn ${presentacionSeleccionada === '1/2 LITRO' ? 'active' : ''}`}
-                  onClick={() => setPresentacionSeleccionada('1/2 LITRO')}
-                >
-                  <strong>1/2 LITRO</strong>
-                  <span>500 gr</span>
-                </button>
-                <button 
-                  className={`pres-btn ${presentacionSeleccionada === '1 LITRO' ? 'active' : ''}`}
-                  onClick={() => setPresentacionSeleccionada('1 LITRO')}
-                >
-                  <strong>1 LITRO</strong>
-                  <span>950 gr</span>
-                </button>
+                <div className="pres-btn active" aria-current="true">
+                  <strong>{producto.tipoPresentacion || 'Presentación actual'}</strong>
+                  <span>{producto.pesoVolumen || 'Tamaño no especificado'}</span>
+                </div>
+                <div className="pres-btn pres-btn-futuro" aria-disabled="true">
+                  <strong>Más opciones</strong>
+                  <span>Próximamente</span>
+                </div>
               </div>
-            </div>
+            </section>
 
-            {/* Controles de cantidad y botones de acción */}
+            <dl className="detalle-datos-modelo">
+              <div><dt>Sabores disponibles</dt><dd>{sabores}</dd></div>
+              <div><dt>Máximo de sabores</dt><dd>{producto.maxSabores}</dd></div>
+              <div><dt>Disponibilidad</dt><dd>{productoDisponible ? `Disponible (${producto.stockDisponible})` : 'Agotado'}</dd></div>
+            </dl>
+
             <div className="detalle-acciones-compra">
-              <div className="contador-cantidad-box">
-                <button 
-                  onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                  className="btn-cont"
-                >
-                  -
-                </button>
-                <span className="num-cont">{cantidad}</span>
-                <button 
-                  onClick={() => setCantidad(cantidad + 1)}
-                  className="btn-cont"
-                >
-                  +
-                </button>
+              <div className="contador-cantidad-box" aria-label="Cantidad">
+                <button type="button" className="btn-cont" aria-label="Reducir cantidad" onClick={() => setCantidad((actual) => Math.max(1, actual - 1))}>−</button>
+                <span className="num-cont" aria-live="polite">{cantidad}</span>
+                <button type="button" className="btn-cont" aria-label="Aumentar cantidad" onClick={() => setCantidad((actual) => Math.min(producto.stockDisponible, actual + 1))} disabled={cantidad >= producto.stockDisponible}>+</button>
               </div>
-
-              <button 
-                className="btn-accion-cesta"
-                onClick={() => alert(`¡${cantidad} producto(s) añadido(s) a la cesta!`)}
-              >
-                🛒 Añadir a la cesta
+              <button className="btn-accion-cesta" onClick={agregarProducto} disabled={!productoDisponible}>
+                {productoDisponible ? '🛒 Añadir al carrito' : 'Producto agotado'}
               </button>
-
-              <button 
-                className="btn-accion-comprar"
-                onClick={() => alert('Procesando compra directa...')}
-              >
-                Comprar ahora
-              </button>
+              <button className="btn-accion-comprar" type="button" disabled title="Esta opción estará disponible próximamente">Comprar ahora · Próximamente</button>
             </div>
 
-            {/* Iconos de beneficios */}
             <div className="detalle-beneficios-grid">
-              <div className="beneficio-item">
-                <span className="ben-icon">🛡️</span>
-                <div>
-                  <strong>100% Natural</strong>
-                  <p>Sin saborizantes</p>
-                </div>
-              </div>
-              <div className="beneficio-item">
-                <span className="ben-icon">❄️</span>
-                <div>
-                  <strong>Envío Frío</strong>
-                  <p>Caja térmica sellada</p>
-                </div>
-              </div>
-              <div className="beneficio-item">
-                <span className="ben-icon">⏱️</span>
-                <div>
-                  <strong>En 45 min</strong>
-                  <p>Delivery en tu puerta</p>
-                </div>
-              </div>
+              <div className="beneficio-item"><span className="ben-icon" aria-hidden="true">🚚</span><div><strong>Información de envío</strong><p>Próximamente</p></div></div>
+              <div className="beneficio-item"><span className="ben-icon" aria-hidden="true">❄️</span><div><strong>Conservación</strong><p>Detalles próximamente</p></div></div>
+              <div className="beneficio-item"><span className="ben-icon" aria-hidden="true">✦</span><div><strong>Más detalles</strong><p>Próximamente</p></div></div>
             </div>
 
             <div className="compartir-row">
-              <span>Compartir este sabor:</span>
-              <div className="share-icons">
-                <button title="Comentarios">💬</button>
-                <button title="Foto">📷</button>
-                <button title="Compartir">🔗</button>
+              <span>Compartir producto</span>
+              <div className="share-icons" aria-label="Opciones para compartir próximamente">
+                <button type="button" disabled aria-label="Compartir próximamente">↗</button>
+                <button type="button" disabled aria-label="Compartir próximamente">✉</button>
+                <span className="placeholder-etiqueta">Próximamente</span>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* Sección inferior: También te puede interesar */}
         <section className="relacionados-section">
-          <h2>También te puede interesar</h2>
-          <p className="relacionados-sub">Descubre más de nuestras creaciones artesanales hechas con amor y fruta pura.</p>
-          
+          <h2>Descubre más productos</h2>
+          <p className="relacionados-sub">Explora el catálogo para encontrar tu próximo favorito.</p>
           <div className="relacionados-grid">
             <Link to="/productos" className="rel-card">
-              <div className="rel-img-box" style={{ background: '#fce4ec' }}>
-                <span className="tag-card-s">Más vendido</span>
-                <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c2185b', fontWeight: 'bold' }}>Cono Arcoíris</div>
-              </div>
-              <div className="rel-info">
-                <h3>Cono Arcoíris</h3>
-                <p>Tres sabores artesanales en cono de waffle crujiente...</p>
-                <div className="rel-footer-card">
-                  <span className="rel-precio">S/ 4.50</span>
-                  <span className="btn-mini-agregar">Ver más</span>
-                </div>
-              </div>
+              <div className="rel-img-box"><img src={imagenProductoPredeterminada} alt="" /><span className="tag-card-s">Catálogo</span></div>
+              <div className="rel-info"><h3>Ver todos los productos</h3><p>Consulta las opciones disponibles en nuestro catálogo.</p><div className="rel-footer-card"><span className="rel-precio">Explorar</span><span className="btn-mini-agregar">Ver catálogo →</span></div></div>
             </Link>
-
-            <Link to="/productos" className="rel-card">
-              <div className="rel-img-box" style={{ background: '#ffebee' }}>
-                <span className="tag-card-s">Temporada</span>
-                <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d32f2f', fontWeight: 'bold' }}>Fresa Cremosa</div>
-              </div>
-              <div className="rel-info">
-                <h3>Fresa Cremosa</h3>
-                <p>Helado artesanal de fresa fresca con trocitos...</p>
-                <div className="rel-footer-card">
-                  <span className="rel-precio">S/ 6.80</span>
-                  <span className="btn-mini-agregar">Ver más</span>
-                </div>
-              </div>
-            </Link>
-
-            <Link to="/productos" className="rel-card">
-              <div className="rel-img-box" style={{ background: '#e0f7fa' }}>
-                <span className="tag-card-s">Nuevo</span>
-                <div style={{ height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#00796b', fontWeight: 'bold' }}>Cono Azul Mágico</div>
-              </div>
-              <div className="rel-info">
-                <h3>Cono Azul Mágico</h3>
-                <p>Sorpresa de arándano y menta azul, visualmente...</p>
-                <div className="rel-footer-card">
-                  <span className="rel-precio">S/ 4.20</span>
-                  <span className="btn-mini-agregar">Ver más</span>
-                </div>
-              </div>
-            </Link>
+            <div className="rel-card rel-card-placeholder" aria-label="Productos relacionados próximamente">
+              <div className="rel-img-box rel-img-placeholder"><span>Próximamente</span></div>
+              <div className="rel-info"><h3>Productos relacionados</h3><p>Las recomendaciones se integrarán cuando estén disponibles en la API.</p><div className="rel-footer-card"><span className="rel-precio">Próximamente</span></div></div>
+            </div>
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -11,7 +11,7 @@ import {
 import './header.css'
 import logoCremissimo from '../../../assets/logo/img_logo3.png'
 
-const DEFAULT_AVATAR = '/avatar-default.svg'
+const DEFAULT_AVATAR = `${import.meta.env.BASE_URL}avatar-default.svg`
 
 function UserIdentity({ usuario }: { usuario: AuthUser }) {
   const avatar = usuario.avatarUrl?.trim() || DEFAULT_AVATAR
@@ -22,6 +22,9 @@ function UserIdentity({ usuario }: { usuario: AuthUser }) {
         src={avatar}
         alt={`Foto de perfil de ${usuario.nombreCompleto}`}
         className="header-user-avatar"
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
         onError={(event) => {
           event.currentTarget.onerror = null
           event.currentTarget.src = DEFAULT_AVATAR
@@ -36,6 +39,13 @@ function UserIdentity({ usuario }: { usuario: AuthUser }) {
 
 export default function Header() {
   const [menuAbierto, setMenuAbierto] = useState(false)
+
+  useEffect(() => {
+    const avatarPredeterminado = new Image()
+    avatarPredeterminado.src = DEFAULT_AVATAR
+    void avatarPredeterminado.decode().catch(() => undefined)
+  }, [])
+
   const queryClient = useQueryClient()
   const usuarioQuery = useQuery<AuthUser | null>({
     queryKey: AUTH_USER_QUERY_KEY,
@@ -63,15 +73,15 @@ export default function Header() {
   return (
     <header className="header-navbar">
       <div className="header-container">
-        <a href="#inicio" className="header-logo-link">
+        <Link to="/inicio" className="header-logo-link" aria-label="Ir al inicio">
           <img src={logoCremissimo} alt="Logo Cremissimo" className="header-logo-img" />
-        </a>
+        </Link>
 
         <nav className="header-nav-desktop">
-          <a href="#inicio" className="header-nav-link">Inicio</a>
-          <a href="#nosotros" className="header-nav-link">Nosotros</a>
-          <a href="#productos" className="header-nav-link">Productos</a>
-          <a href="#contactos" className="header-nav-link">Contactos</a>
+          <Link to="/inicio" className="header-nav-link">Inicio</Link>
+          <Link to="/nosotros" className="header-nav-link">Nosotros</Link>
+          <Link to="/productos" className="header-nav-link">Productos</Link>
+          <Link to="/contactos" className="header-nav-link">Contactos</Link>
         </nav>
 
         <div className="header-actions">
@@ -94,24 +104,29 @@ export default function Header() {
           </div>
 
           <button
-            className="header-menu-toggle"
+            className={`header-menu-toggle${menuAbierto ? ' is-open' : ''}`}
             onClick={() => setMenuAbierto((abierto) => !abierto)}
             aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={menuAbierto}
+            aria-controls="header-mobile-menu"
           >
-            <span className="header-menu-bar"></span>
-            <span className="header-menu-bar"></span>
-            <span className="header-menu-bar"></span>
+            <span className="header-menu-bar header-menu-bar-top"></span>
+            <span className="header-menu-bar header-menu-bar-middle"></span>
+            <span className="header-menu-bar header-menu-bar-bottom"></span>
           </button>
         </div>
       </div>
 
-      {menuAbierto && (
-        <div className="header-nav-mobile">
-          <a href="#inicio" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Inicio</a>
-          <a href="#nosotros" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Nosotros</a>
-          <a href="#productos" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Productos</a>
-          <a href="#contactos" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Contactos</a>
+      <div
+        id="header-mobile-menu"
+        className={`header-nav-mobile${menuAbierto ? ' is-open' : ''}`}
+        aria-hidden={!menuAbierto}
+        inert={!menuAbierto}
+      >
+          <Link to="/inicio" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Inicio</Link>
+          <Link to="/nosotros" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Nosotros</Link>
+          <Link to="/productos" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Productos</Link>
+          <Link to="/contactos" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Contactos</Link>
 
           <div className="header-mobile-auth">
             {usuarioQuery.isPending ? null : usuario ? (
@@ -130,8 +145,7 @@ export default function Header() {
               </div>
             )}
           </div>
-        </div>
-      )}
+      </div>
     </header>
   )
 }
