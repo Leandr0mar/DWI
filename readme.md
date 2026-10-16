@@ -25,6 +25,7 @@ Los proyectos `api` y `ui` se ejecutan por separado. En desarrollo local, el fro
 - Spring Data JPA / Hibernate y MySQL.
 - Spring Security con JWT en cookie `HttpOnly` y protección CSRF mediante cookie/token.
 - Spring Validation para validar solicitudes.
+- Flyway para versionar el esquema y cargar datos iniciales del catálogo.
 - Lombok para reducir código repetitivo.
 - Maven Wrapper para compilar y ejecutar el proyecto.
 
@@ -79,7 +80,10 @@ api/
     │   │   ├── pedido/              Modelos de pedido, detalle e historial
     │   │   └── integracion/stripe/  Registro relacionado con webhook de Stripe
     │   └── resources/
-    │       └── application.properties
+    │       ├── application.properties
+    │       └── db/migration/           Migraciones Flyway versionadas
+    │           ├── V1__create_initial_schema.sql
+    │           └── V2__seed_initial_catalog.sql
     └── test/                        Pruebas automatizadas
 ```
 
@@ -181,7 +185,33 @@ El carrito de la interfaz aún no equivale a un pedido persistido en el backend.
 
 ### 1. Base de datos y backend
 
-Crea la base de datos `cremissimo` en MySQL. La conexión está configurada en `api/src/main/resources/application.properties`; revisa y ajusta la URL, usuario y contraseña para tu instalación antes de iniciar. El archivo `db.sql` en la raíz del repositorio puede servir como apoyo para preparar datos de prueba.
+Crea primero el esquema vacío en MySQL:
+
+```sql
+CREATE DATABASE cremissimo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Flyway administra el esquema al iniciar la API. En una base vacía ejecuta las migraciones `V1` (tablas) y `V2` (datos iniciales del catálogo); Hibernate usa `validate` para comprobar que las entidades coincidan con el esquema, sin modificarlo.
+
+La conexión se configura en `api/src/main/resources/application.properties`. Para desarrollo local se usan `root` y `root` como valores predeterminados; puedes sobrescribirlos mediante variables de entorno antes de ejecutar la API:
+
+| Variable | Uso | Valor predeterminado local |
+| --- | --- | --- |
+| `DB_URL` | URL JDBC de MySQL | `jdbc:mysql://localhost:3306/cremissimo?useSSL=false&serverTimezone=UTC` |
+| `DB_USERNAME` | Usuario MySQL | `root` |
+| `DB_PASSWORD` | Contraseña MySQL | `root` |
+| `JPA_SHOW_SQL` | Mostrar SQL de Hibernate | `false` |
+
+En PowerShell, por ejemplo:
+
+```powershell
+$env:DB_USERNAME = "root"
+$env:DB_PASSWORD = "tu-clave-local"
+```
+
+`db.sql` se conserva como script manual de referencia para el catálogo. La migración `V2` ya carga esos datos al crear una base nueva; no ejecutes ambos mecanismos sobre la misma base porque los identificadores del catálogo se repetirían.
+
+Si la base ya tenía tablas antes de habilitar Flyway, `baseline-on-migrate` la registra automáticamente en la versión `2` y no vuelve a ejecutar `V1` ni `V2`, preservando sus datos. Luego Hibernate verifica el esquema; si faltan tablas o columnas requeridas, la aplicación fallará al arrancar y habrá que crear una migración correctiva. Haz una copia de seguridad antes de adoptar una base existente.
 
 Desde PowerShell:
 
@@ -249,6 +279,8 @@ La configuración del backend está en `api/src/main/resources/application.prope
 Para una demostración local se puede omitir `JWT_SECRET`; como la clave temporal cambia al reiniciar, las cookies existentes dejan de ser válidas. En un entorno desplegado se debe configurar un secreto estable y privado, habilitar `AUTH_COOKIE_SECURE=true` bajo HTTPS y permitir solo los orígenes reales del frontend. No se debe publicar un secreto JWT ni credenciales reales de base de datos en el repositorio.
 
 El flujo y las notas detalladas de autenticación están en [`api/docs/AUTH.md`](api/docs/AUTH.md).
+
+Flyway está habilitado con validación de migraciones y `clean` deshabilitado para evitar borrar el esquema accidentalmente. Agrega cambios posteriores como nuevos archivos SQL con versiones crecientes en `api/src/main/resources/db/migration/`; no edites migraciones que ya se hayan aplicado en otros entornos.
 
 ## Documentación adicional
 
