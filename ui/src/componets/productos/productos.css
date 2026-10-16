@@ -20,7 +20,7 @@
 }
 
 .productos-titulo h2, .proceso-section h2 {
-  font-family: 'Pacifico', cursive;
+  font-family: var(--font-primary);
   font-weight: 400;
 }
 
@@ -39,7 +39,7 @@
 .productos-grid{
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
   margin: auto;
   width: min(970px, 100%);
 }

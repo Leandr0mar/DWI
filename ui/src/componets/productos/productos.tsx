@@ -1,53 +1,84 @@
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import ProductoCard, { type Producto } from './producto_card'
+import ProductoCard, { type ProductoCatalogo } from './ProductoCard'
+import FiltrosProductos, { filtrosIniciales, type Filtros } from './FiltrosProductos'
 import './productos.css'
+import imagenProductoPredeterminada from '../../assets/productos_destacados/pd_1.jpg'
 
-interface Props {
-  onAgregar: (producto: Producto) => void
-}
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
-// Interfaz para la entidad Sabor que envía el backend
-interface SaborBackend {
+interface ProductoBackend {
   id: number
+  uuid: string
+  sku: string
   nombre: string
+  descripcion: string | null
+  precioBase: number
+  stockDisponible: number
+  categoria: string
+  sabores: string[]
+  urlImagen: string | null
+  pesoVolumen: string | null
+  tipoPresentacion: string | null
 }
 
-// Interfaz adaptada a la relación @ManyToMany de Helado.java
-interface HeladoBackend {
-  idHelado: number
-  nombre: string
-  precio: number
-  urlImagen: string
-  sabores: SaborBackend[]
-}
-
-// Función para obtener y transformar los datos
-const fetchHelados = async (): Promise<Producto[]> => {
-  const response = await fetch('http://localhost:8080/api/helados/listar')
+const fetchProductos = async (): Promise<ProductoCatalogo[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/v1/catalogo/productos`)
   
   if (!response.ok) {
-    throw new Error('Error al obtener los helados del servidor')
+    throw new Error(`No se pudieron cargar los productos (HTTP ${response.status}).`)
   }
 
-  const data: HeladoBackend[] = await response.json()
+  const data: ProductoBackend[] = await response.json()
 
-  // Mapeamos los datos y unimos los nombres de los sabores
-  return data.map((helado) => ({
-    id: helado.idHelado,
-    nombre: helado.nombre,
-    sabor: helado.sabores && helado.sabores.length > 0
-      ? helado.sabores.map((s) => s.nombre).join(', ')
+  return data.map((producto) => ({
+    id: producto.id,
+    uuid: producto.uuid,
+    nombre: producto.nombre,
+    descripcion: producto.descripcion,
+    categoria: producto.categoria,
+    stockDisponible: producto.stockDisponible,
+    pesoVolumen: producto.pesoVolumen,
+    tipoPresentacion: producto.tipoPresentacion,
+    sabor: producto.sabores.length > 0
+      ? producto.sabores.join(', ')
       : 'Varios sabores',
-    precio: helado.precio,
-    imagen: helado.urlImagen,
+    precio: producto.precioBase,
+    imagen: producto.urlImagen?.trim() || imagenProductoPredeterminada,
   }))
 }
 
-function Productos({ onAgregar }: Props) {
+function Productos() {
+  const [filtros, setFiltros] = useState<Filtros>(filtrosIniciales)
   const { data: productos, isLoading, isError, error } = useQuery({
-    queryKey: ['helados'],
-    queryFn: fetchHelados,
+    queryKey: ['productos-catalogo'],
+    queryFn: fetchProductos,
   })
+
+  const categorias = useMemo(
+    () => [...new Set((productos ?? []).map((producto) => producto.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')),
+    [productos],
+  )
+
+  const productosFiltrados = useMemo(() => {
+    const nombreBuscado = filtros.nombre.trim().toLocaleLowerCase('es')
+    const resultado = (productos ?? []).filter((producto) => {
+      const coincideNombre = producto.nombre.toLocaleLowerCase('es').includes(nombreBuscado)
+      const coincideCategoria = !filtros.categoria || producto.categoria === filtros.categoria
+      const coincideDisponibilidad = filtros.disponibilidad === 'todos'
+        || (filtros.disponibilidad === 'disponibles' && producto.stockDisponible > 0)
+        || (filtros.disponibilidad === 'agotados' && producto.stockDisponible <= 0)
+      return coincideNombre && coincideCategoria && coincideDisponibilidad
+    })
+
+    switch (filtros.orden) {
+      case 'precio-asc': return resultado.sort((a, b) => a.precio - b.precio)
+      case 'precio-desc': return resultado.sort((a, b) => b.precio - a.precio)
+      case 'nombre-asc': return resultado.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }))
+      case 'nombre-desc': return resultado.sort((a, b) => b.nombre.localeCompare(a.nombre, 'es', { sensitivity: 'base' }))
+      default: return resultado
+    }
+  }, [productos, filtros])
 
   return (
     <section className="productos-section" id="productos">
@@ -60,22 +91,27 @@ function Productos({ onAgregar }: Props) {
       {isLoading && <p className="text-center">Cargando deliciosos helados...</p>}
       
       {isError && (
-        <p className="text-center text-red-500">
-          Ocurrió un error: {error instanceof Error ? error.message : 'Error desconocido'}
+        <p className="text-center">
+          {error instanceof Error ? error.message : 'Ocurrió un error: vuelve a intentarlo más tarde.'}
         </p>
       )}
 
+      {!isLoading && !isError && productos?.length === 0 && (
+        <p className="text-center">Pronto agregaremos productos a nuestro catálogo.</p>
+      )}
+
       {/* Renderizado del Grid */}
-      {!isLoading && !isError && (
-        <div className="productos-grid">
-          {productos?.map((producto) => (
-            <ProductoCard 
-              key={producto.id} 
-              producto={producto} 
-              onAgregar={onAgregar}
-            />
-          ))}
-        </div>
+      {!isLoading && !isError && productos && productos.length > 0 && (
+        <>
+          <FiltrosProductos filtros={filtros} categorias={categorias} total={productosFiltrados.length} onChange={setFiltros} />
+          {productosFiltrados.length > 0 ? (
+            <div className="productos-grid">
+              {productosFiltrados.map((producto) => <ProductoCard key={producto.id} producto={producto} />)}
+            </div>
+          ) : (
+            <p className="productos-vacio">No encontramos productos con esos filtros. Prueba con otros criterios.</p>
+          )}
+        </>
       )}
     </section>
   )

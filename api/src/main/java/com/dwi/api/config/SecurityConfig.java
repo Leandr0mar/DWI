@@ -1,47 +1,115 @@
-package com.dwi.api.config; // Ajusta el paquete según tu estructura
+package com.dwi.api.config;
 
+import com.dwi.api.seguridad.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            CorsConfigurationSource corsConfigurationSource,
+            AuthenticationProvider authenticationProvider,
+            CsrfTokenRepository csrfTokenRepository
+    ) throws Exception {
         http
-            // 1. Habilitamos CORS a nivel de seguridad
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // Deshabilitamos CSRF temporalmente (común en APIs REST sin cookies de sesión tradicionales)
-            .csrf(csrf -> csrf.disable()) 
-            // 2. Configuramos los permisos de las rutas
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository)
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+            )
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/helados/listar").permitAll() // Permitir listar sin login
-                .anyRequest().authenticated() // Bloquear el resto (crear, eliminar, etc.)
-            );
-        
+                .requestMatchers(
+                    "/api/v1/auth/csrf",
+                    "/api/v1/auth/login",
+                    "/api/v1/auth/registro",
+                    "/api/v1/auth/recuperar-password"
+                ).permitAll()
+                .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout").authenticated()
+                .requestMatchers("/api/v1/catalogo/**").permitAll() // Público: Ver helados
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // Privado: Solo Admins
+                .anyRequest().authenticated() // Privado: Todo lo demás (ej. Carrito, Pedidos) requiere login
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // No guardar sesión en el servidor
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, exception) -> {
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"message\":\"Inicia sesión para continuar.\"}");
+                })
+                .accessDeniedHandler((request, response, exception) -> {
+                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"message\":\"No tienes permiso para realizar esta acción.\"}");
+                })
+            )
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // Insertar filtro JWT
+
         return http.build();
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // 3. Pon aquí la URL exacta de tu frontend
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); 
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // Opcional, pero útil si luego usas tokens
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    public CsrfTokenRepository csrfTokenRepository(
+            @Value("${app.security.cookie.secure:false}") boolean secure,
+            @Value("${app.security.cookie.same-site:Lax}") String sameSite
+    ) {
+        CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
+        repository.setCookieCustomizer(cookie -> cookie
+                .path("/")
+                .httpOnly(true)
+                .secure(secure)
+                .sameSite(sameSite));
+        return repository;
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder
+    ) {
+        // Spring Security 7 requiere UserDetailsService en el constructor.
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder);
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
