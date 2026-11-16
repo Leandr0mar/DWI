@@ -23,11 +23,11 @@ public class AuthService {
     public LoginResult login(LoginRequestDTO request) {
         // 1. Spring Security maneja la validación de la contraseña internamente aquí
         var authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         // 2. Si pasa el paso anterior, la contraseña es correcta. Buscamos al usuario
-        Usuario usuario = usuarioRepository.findByEmail(request.email())
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         // El AuthenticationManager devuelve el principal ya validado para firmar el JWT.
@@ -43,11 +43,11 @@ public class AuthService {
     }
 
     private AuthResponseDTO toProfile(Usuario usuario) {
-        return new AuthResponseDTO(
-                usuario.getNombres() + " " + usuario.getApellidos(),
-                usuario.getRolSistema().name(),
-                usuario.getAvatarUrl()
-        );
+        return AuthResponseDTO.builder()
+                .nombreCompleto(usuario.getNombres() + " " + usuario.getApellidos())
+                .rolSistema(usuario.getRolSistema().name())
+                .avatarUrl(usuario.getAvatarUrl())
+                .build();
     }
 
     public record LoginResult(String token, AuthResponseDTO profile) {}

@@ -13,7 +13,7 @@ export default function Login() {
     mutationFn: iniciarSesion,
     onSuccess: (response) => {
       queryClient.setQueryData(AUTH_USER_QUERY_KEY, response);
-      navigate("/inicio", { replace: true });
+      navigate(response.rolSistema === "ADMIN" ? "/administrador/dashboard" : "/inicio", { replace: true });
     },
     onError: (error: Error) => setFormError(error.message),
   });

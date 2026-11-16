@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Producto } from '../../productos/ProductoCard'
+import { agruparProductos, calcularSubtotal } from './cart-utils'
 import './carrito_modal.css'
 
 interface Props {
@@ -8,24 +10,6 @@ interface Props {
   onCerrar: () => void
   onEliminar: (producto: Producto) => void
   onReducir: (producto: Producto) => void
-}
-
-interface LineaCarrito {
-  producto: Producto
-  cantidad: number
-}
-
-function agruparProductos(carrito: Producto[]): LineaCarrito[] {
-  const lineas = new Map<string, LineaCarrito>()
-
-  for (const producto of carrito) {
-    const llave = `${producto.id}:${producto.sabor}`
-    const linea = lineas.get(llave)
-    if (linea) linea.cantidad += 1
-    else lineas.set(llave, { producto, cantidad: 1 })
-  }
-
-  return Array.from(lineas.values())
 }
 
 export default function CarritoModal({ abierto, carrito, onCerrar, onEliminar, onReducir }: Props) {
@@ -44,7 +28,7 @@ export default function CarritoModal({ abierto, carrito, onCerrar, onEliminar, o
   if (!visible) return null
 
   const lineas = agruparProductos(carrito)
-  const subtotal = carrito.reduce((suma, producto) => suma + producto.precio, 0)
+  const subtotal = calcularSubtotal(carrito)
 
   return (
     <div
@@ -63,7 +47,12 @@ export default function CarritoModal({ abierto, carrito, onCerrar, onEliminar, o
         </div>
 
         {carrito.length === 0 ? (
-          <p className="carrito-vacio">Todavía no agregaste productos. Explora el catálogo para elegir algo delicioso.</p>
+          <>
+            <p className="carrito-vacio">Todavía no agregaste productos. Explora el catálogo para elegir algo delicioso.</p>
+            <div className="carrito-resumen">
+              <Link className="carrito-ir-pagina" to="/carrito" onClick={onCerrar}>Ver página del carrito <span aria-hidden="true">→</span></Link>
+            </div>
+          </>
         ) : (
           <>
             <div className="carrito-items">
@@ -91,7 +80,7 @@ export default function CarritoModal({ abierto, carrito, onCerrar, onEliminar, o
             <div className="carrito-resumen">
               <div><span>Subtotal ({carrito.length} {carrito.length === 1 ? 'unidad' : 'unidades'})</span><strong>S/ {subtotal.toFixed(2)}</strong></div>
               <p>El costo de envío y el total final se calcularán al continuar con la compra.</p>
-              <button className="carrito-seguir-comprando" type="button" onClick={onCerrar}>Seguir comprando</button>
+              <Link className="carrito-ir-pagina" to="/carrito" onClick={onCerrar}>Revisar carrito <span aria-hidden="true">→</span></Link>
             </div>
           </>
         )}

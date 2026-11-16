@@ -21,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
 @Configuration
@@ -51,7 +52,8 @@ public class SecurityConfig {
                     "/api/v1/auth/recuperar-password"
                 ).permitAll()
                 .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout").authenticated()
-                .requestMatchers("/api/v1/catalogo/**").permitAll() // Público: Ver helados
+                .requestMatchers(HttpMethod.GET, "/api/v1/catalogo/**").permitAll()
+                .requestMatchers("/api/v1/catalogo/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // Privado: Solo Admins
                 .anyRequest().authenticated() // Privado: Todo lo demás (ej. Carrito, Pedidos) requiere login
             )

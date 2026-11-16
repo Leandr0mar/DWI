@@ -25,7 +25,6 @@ Los proyectos `api` y `ui` se ejecutan por separado. En desarrollo local, el fro
 - Spring Data JPA / Hibernate y MySQL.
 - Spring Security con JWT en cookie `HttpOnly` y protección CSRF mediante cookie/token.
 - Spring Validation para validar solicitudes.
-- Flyway para versionar el esquema y cargar datos iniciales del catálogo.
 - Lombok para reducir código repetitivo.
 - Maven Wrapper para compilar y ejecutar el proyecto.
 
@@ -81,9 +80,9 @@ api/
     │   │   └── integracion/stripe/  Registro relacionado con webhook de Stripe
     │   └── resources/
     │       ├── application.properties
-    │       └── db/migration/           Migraciones Flyway versionadas
-    │           ├── V1__create_initial_schema.sql
-    │           └── V2__seed_initial_catalog.sql
+    │       └── db/scripts/              Scripts SQL manuales
+    │           ├── Cremissimo.sql       Esquema MySQL
+    │           └── seed_demo_accounts.sql
     └── test/                        Pruebas automatizadas
 ```
 
@@ -185,13 +184,9 @@ El carrito de la interfaz aún no equivale a un pedido persistido en el backend.
 
 ### 1. Base de datos y backend
 
-Crea primero el esquema vacío en MySQL:
+La base de datos `cremissimo` debe existir en MySQL, pero no necesitas crear sus tablas manualmente. Hibernate crea y actualiza las tablas al iniciar la API usando las entidades del proyecto (`spring.jpa.hibernate.ddl-auto=update`). Los archivos de `api/src/main/resources/db/scripts/` quedan como referencia y respaldo manual; no se ejecutan al iniciar.
 
-```sql
-CREATE DATABASE cremissimo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-Flyway administra el esquema al iniciar la API. En una base vacía ejecuta las migraciones `V1` (tablas) y `V2` (datos iniciales del catálogo); Hibernate usa `validate` para comprobar que las entidades coincidan con el esquema, sin modificarlo.
+Las cuentas demo opcionales pueden cargarse manualmente desde `api/src/main/resources/db/scripts/seed_demo_accounts.sql` una vez que Hibernate haya creado las tablas.
 
 La conexión se configura en `api/src/main/resources/application.properties`. Para desarrollo local se usan `root` y `root` como valores predeterminados; puedes sobrescribirlos mediante variables de entorno antes de ejecutar la API:
 
@@ -208,10 +203,6 @@ En PowerShell, por ejemplo:
 $env:DB_USERNAME = "root"
 $env:DB_PASSWORD = "tu-clave-local"
 ```
-
-`db.sql` se conserva como script manual de referencia para el catálogo. La migración `V2` ya carga esos datos al crear una base nueva; no ejecutes ambos mecanismos sobre la misma base porque los identificadores del catálogo se repetirían.
-
-Si la base ya tenía tablas antes de habilitar Flyway, `baseline-on-migrate` la registra automáticamente en la versión `2` y no vuelve a ejecutar `V1` ni `V2`, preservando sus datos. Luego Hibernate verifica el esquema; si faltan tablas o columnas requeridas, la aplicación fallará al arrancar y habrá que crear una migración correctiva. Haz una copia de seguridad antes de adoptar una base existente.
 
 Desde PowerShell:
 
@@ -280,7 +271,7 @@ Para una demostración local se puede omitir `JWT_SECRET`; como la clave tempora
 
 El flujo y las notas detalladas de autenticación están en [`api/docs/AUTH.md`](api/docs/AUTH.md).
 
-Flyway está habilitado con validación de migraciones y `clean` deshabilitado para evitar borrar el esquema accidentalmente. Agrega cambios posteriores como nuevos archivos SQL con versiones crecientes en `api/src/main/resources/db/migration/`; no edites migraciones que ya se hayan aplicado en otros entornos.
+Los cambios futuros al esquema deben aplicarse manualmente en MySQL y mantenerse documentados en los scripts SQL. Haz una copia de seguridad antes de modificar una base con datos existentes.
 
 ## Documentación adicional
 

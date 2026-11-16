@@ -8,7 +8,11 @@ import PageFade from './PageFade'
 import type { Producto } from '../../productos/ProductoCard'
 
 export interface LayoutContext {
+  carrito: Producto[]
   agregarAlCarrito: (producto: Producto) => void
+  eliminarDelCarrito: (producto: Producto) => void
+  reducirCantidad: (producto: Producto) => void
+  vaciarCarrito: () => void
 }
 
 // Hook para que las páginas hijas puedan agregar productos al carrito
@@ -28,7 +32,18 @@ export default function Layout() {
 
   const agregarAlCarrito = (producto: Producto) => {
     setCarrito((actual) => [...actual, producto])
-    setCarritoAbierto(true)
+    if (pathname !== '/carrito') setCarritoAbierto(true)
+  }
+
+  const eliminarDelCarrito = (producto: Producto) => {
+    setCarrito((actual) => actual.filter((item) => !sonIguales(item, producto)))
+  }
+
+  const reducirCantidad = (producto: Producto) => {
+    setCarrito((actual) => {
+      const indice = actual.findIndex((item) => sonIguales(item, producto))
+      return indice < 0 ? actual : actual.filter((_, itemIndex) => itemIndex !== indice)
+    })
   }
 
   return (
@@ -37,24 +52,29 @@ export default function Layout() {
 
       <main>
         <PageFade>
-          <Outlet context={{ agregarAlCarrito } satisfies LayoutContext} />
+          <Outlet context={{
+            carrito,
+            agregarAlCarrito,
+            eliminarDelCarrito,
+            reducirCantidad,
+            vaciarCarrito: () => setCarrito([]),
+          } satisfies LayoutContext} />
         </PageFade>
       </main>
 
       <CarritoModal
         abierto={carritoAbierto}
         carrito={carrito}
-        onEliminar={(producto) => setCarrito((actual) => actual.filter((item) => !sonIguales(item, producto)))}
-        onReducir={(producto) => setCarrito((actual) => {
-          const indice = actual.findIndex((item) => sonIguales(item, producto))
-          return indice < 0 ? actual : actual.filter((_, itemIndex) => itemIndex !== indice)
-        })}
+        onEliminar={eliminarDelCarrito}
+        onReducir={reducirCantidad}
         onCerrar={() => setCarritoAbierto(false)}
       />
-      <CarritoFlotante
-        cantidad={carrito.length}
-        onAbrir={() => setCarritoAbierto(true)}
-      />
+      {pathname !== '/carrito' && pathname !== '/checkout' && pathname !== '/compra/confirmacion' && (
+        <CarritoFlotante
+          cantidad={carrito.length}
+          onAbrir={() => setCarritoAbierto(true)}
+        />
+      )}
 
       <Footer />
     </>

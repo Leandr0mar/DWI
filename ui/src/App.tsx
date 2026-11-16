@@ -1,5 +1,7 @@
 import './App.css'
+import { useQuery } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AUTH_USER_QUERY_KEY, obtenerUsuarioActual } from './services/auth'
 import Home from './pages/home/home'
 import Login from './pages/auth/login'
 import Registro from './pages/auth/registro'
@@ -10,6 +12,29 @@ import ProductosPage from './pages/productos/productos'
 import ProductosDetalle from './pages/productos/productos-detalle'
 import Layout from './componets/common/layout/Layout'
 import PageFade from './componets/common/layout/PageFade'
+import Dashboard from './pages/administrador/dashboard'
+import CarritoPage from './pages/compra/carrito'
+import CheckoutPage from './pages/compra/checkout'
+import CompraConfirmadaPage from './pages/compra/confirmacion'
+
+function AdminOnlyRoute({ children }: { children: React.ReactNode }) {
+	const usuarioQuery = useQuery({
+		queryKey: AUTH_USER_QUERY_KEY,
+		queryFn: obtenerUsuarioActual,
+		retry: false,
+		refetchOnMount: 'always',
+	})
+
+	if (usuarioQuery.isPending || usuarioQuery.isFetching) {
+		return <main className="dashboard-auth-loading" role="status">Verificando acceso…</main>
+	}
+
+	if (usuarioQuery.isError || usuarioQuery.data?.rolSistema !== 'ADMIN') {
+		return <Navigate to="/inicio" replace />
+	}
+
+	return children
+}
 
 function App() {
 	return (
@@ -22,10 +47,14 @@ function App() {
 					<Route path="/contactos" element={<ContactosPage />} />
 					<Route path="/productos" element={<ProductosPage />} />
 					<Route path="/productos/:uuid" element={<ProductosDetalle />} />
+					<Route path="/carrito" element={<CarritoPage />} />
+					<Route path="/checkout" element={<CheckoutPage />} />
+					<Route path="/compra/confirmacion" element={<CompraConfirmadaPage />} />
 				</Route>
 				<Route path="/login" element={<PageFade><Login /></PageFade>} />
 				<Route path="/registro" element={<PageFade><Registro /></PageFade>} />
 				<Route path="/recuperar-contrasena" element={<PageFade><ContrasenaPerdida /></PageFade>} />
+				<Route path="/administrador/dashboard" element={<AdminOnlyRoute><Dashboard /></AdminOnlyRoute>} />
 			</Routes>
 		</BrowserRouter>
 	)

@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  api-tests:
+    name: API tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent --host=127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: api/pom.xml
+
+      - name: Create empty test database
+        working-directory: api
+        env:
+          MYSQL_PWD: root
+        run: |
+          mysql --host=127.0.0.1 --port=3306 --user=root -e "CREATE DATABASE cremissimo"
+
+      - name: Run API tests
+        working-directory: api
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/cremissimo?useSSL=false&serverTimezone=UTC
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: bash ./mvnw --batch-mode --no-transfer-progress verify
+
+  frontend-checks:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build

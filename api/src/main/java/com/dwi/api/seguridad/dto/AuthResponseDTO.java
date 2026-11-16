@@ -1,7 +1,13 @@
 package com.dwi.api.seguridad.dto;
 
-public record AuthResponseDTO(
-    String nombreCompleto,
-    String rol,
-    String avatarUrl
-) {}
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class AuthResponseDTO {
+    
+    private String nombreCompleto;
+    private String rolSistema;
+    private String avatarUrl;
+}

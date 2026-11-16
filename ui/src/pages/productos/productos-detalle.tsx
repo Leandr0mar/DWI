@@ -26,7 +26,7 @@ interface ProductoDetalle {
 
 async function fetchProducto(uuid: string): Promise<ProductoDetalle> {
   const response = await fetch(
-    `${API_BASE_URL}/api/v1/catalogo/productos/${encodeURIComponent(uuid)}`,
+    `${API_BASE_URL}/api/v1/catalogo/productos/uuid/${encodeURIComponent(uuid)}`,
   )
   if (!response.ok) {
     if (response.status === 404) throw new Error('No encontramos ese producto en el catálogo.')

@@ -4,7 +4,7 @@ export const AUTH_USER_QUERY_KEY = ["auth-user"] as const;
 
 export interface AuthUser {
   nombreCompleto: string;
-  rol: string;
+  rolSistema: string;
   avatarUrl: string | null;
 }
 
