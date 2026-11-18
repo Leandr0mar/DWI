@@ -1,7 +1,11 @@
 package com.dwi.api.pedido.controller;
 
+import com.dwi.api.pedido.dto.PedidoAdminDTO;
+import com.dwi.api.pedido.dto.PedidoCrearRequestDTO;
+import com.dwi.api.pedido.model.HistorialEstadoPedido;
 import com.dwi.api.pedido.model.Pedido;
 import com.dwi.api.pedido.service.PedidoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +29,13 @@ public class PedidoController {
      * GET /api/pedidos
      */
     @GetMapping
-    public List<Pedido> listarTodos() {
+    public List<PedidoAdminDTO> listarTodos() {
         return pedidoService.listarTodos();
     }
     
-    /** No crea pedidos vacíos; falta recibir y validar los detalles y precios del carrito. */
-    @PostMapping("/cliente/{clienteId}/direccion/{direccionId}")
-    public ResponseEntity<Pedido> crear(
-            @PathVariable Long clienteId, 
-            @PathVariable Long direccionId) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    @PostMapping
+    public ResponseEntity<PedidoAdminDTO> crear(@Valid @RequestBody PedidoCrearRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.crearPedido(request));
     }
     
     /**
@@ -42,7 +43,7 @@ public class PedidoController {
      * GET /api/pedidos/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Pedido> getPorId(@PathVariable Long id) {
+    public ResponseEntity<PedidoAdminDTO> getPorId(@PathVariable Long id) {
         return pedidoService.getPedidoPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -53,7 +54,7 @@ public class PedidoController {
      * GET /api/pedidos/uuid/{uuid}
      */
     @GetMapping("/uuid/{uuid}")
-    public ResponseEntity<Pedido> getPorUuid(@PathVariable String uuid) {
+    public ResponseEntity<PedidoAdminDTO> getPorUuid(@PathVariable String uuid) {
         return pedidoService.getPedidoPorUuid(uuid)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -74,7 +75,7 @@ public class PedidoController {
      * GET /api/pedidos/cliente/{clienteId}
      */
     @GetMapping("/cliente/{clienteId}")
-    public List<Pedido> obtenerPorCliente(@PathVariable Long clienteId) {
+    public List<PedidoAdminDTO> obtenerPorCliente(@PathVariable Long clienteId) {
         return pedidoService.obtenerPedidosDeCliente(clienteId);
     }
     
@@ -83,15 +84,27 @@ public class PedidoController {
      * PUT /api/pedidos/{id}/pago/{estadoPago}
      */
     @PutMapping("/{id}/pago/{estado}")
-    public ResponseEntity<String> actualizarEstadoPago(
+    public ResponseEntity<Void> actualizarEstadoPago(
             @PathVariable Long id, 
             @PathVariable String estado) {
         
-        try {
-            pedidoService.actualizarEstadoPago(id, Pedido.EstadoPago.valueOf(estado.toUpperCase()));
-            return ResponseEntity.ok("Estado actualizado a: " + estado);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        pedidoService.actualizarEstadoPago(id, Pedido.EstadoPago.valueOf(estado.toUpperCase()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/estado/{estado}")
+    public ResponseEntity<Void> actualizarEstadoPedido(
+            @PathVariable Long id,
+            @PathVariable String estado) {
+        pedidoService.actualizarEstadoPedido(
+                id,
+                HistorialEstadoPedido.EstadoPedido.valueOf(estado.toUpperCase()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        pedidoService.eliminarPedidoPendiente(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -4,6 +4,7 @@ import com.dwi.api.catalogo.producto.dto.ProductoRequestDTO;
 import com.dwi.api.catalogo.producto.dto.ProductoResponseDTO;
 import com.dwi.api.catalogo.producto.service.ProductoService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,8 +58,10 @@ public class ProductoController {
      * POST /api/v1/catalogo/productos
      */
     @PostMapping
-    public ProductoResponseDTO crear(@Valid @RequestBody ProductoRequestDTO request) {
-        return productoService.crearProducto(request);
+    public ProductoResponseDTO crear(
+            @Valid @RequestBody ProductoRequestDTO request,
+            Authentication authentication) {
+        return productoService.crearProducto(request, authentication.getName());
     }
     
     /**
@@ -68,8 +71,9 @@ public class ProductoController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> actualizar(
             @PathVariable Long id,
-            @Valid @RequestBody ProductoRequestDTO request) {
-        return ResponseEntity.ok(productoService.actualizarProducto(id, request));
+            @Valid @RequestBody ProductoRequestDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(productoService.actualizarProducto(id, request, authentication.getName()));
     }
     
     /**

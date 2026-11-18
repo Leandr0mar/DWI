@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
@@ -23,5 +24,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     
     // Buscar pedidos por dirección
     List<Pedido> findByDireccion(Direccion direccion);
+
+    List<Pedido> findAllByOrderByCreatedAtDesc();
     
 }

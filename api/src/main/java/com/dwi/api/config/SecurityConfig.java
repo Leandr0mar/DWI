@@ -1,5 +1,6 @@
 package com.dwi.api.config;
 
+import com.dwi.api.common.response.ApiResponse;
 import com.dwi.api.seguridad.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +56,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/catalogo/**").permitAll()
                 .requestMatchers("/api/v1/catalogo/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // Privado: Solo Admins
+                .requestMatchers(
+                    "/api/pedidos/**",
+                    "/api/clientes/**",
+                    "/api/usuarios/**",
+                    "/api/direcciones/**",
+                    "/api/zonas/**"
+                ).hasRole("ADMIN")
                 .anyRequest().authenticated() // Privado: Todo lo demás (ej. Carrito, Pedidos) requiere login
             )
             .sessionManagement(session -> session
@@ -65,13 +73,13 @@ public class SecurityConfig {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("{\"message\":\"Inicia sesión para continuar.\"}");
+                    response.getWriter().write(ApiResponse.unauthorized().toJson());
                 })
                 .accessDeniedHandler((request, response, exception) -> {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write("{\"message\":\"No tienes permiso para realizar esta acción.\"}");
+                    response.getWriter().write(ApiResponse.forbidden().toJson());
                 })
             )
             .authenticationProvider(authenticationProvider)

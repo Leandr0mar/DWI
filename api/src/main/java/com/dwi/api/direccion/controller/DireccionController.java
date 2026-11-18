@@ -1,7 +1,10 @@
 package com.dwi.api.direccion.controller;
 
+import com.dwi.api.direccion.dto.DireccionAdminDTO;
+import com.dwi.api.direccion.dto.DireccionAdminRequestDTO;
 import com.dwi.api.direccion.model.Direccion;
 import com.dwi.api.direccion.service.DireccionService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +24,8 @@ public class DireccionController {
      * GET /api/direcciones
      */
     @GetMapping
-    public List<Direccion> listarTodos() {
-        return direccionService.listarTodas();
+    public List<DireccionAdminDTO> listarTodos() {
+        return direccionService.listarParaAdministracion();
     }
     
     /**
@@ -30,8 +33,8 @@ public class DireccionController {
      * GET /api/direcciones/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Direccion> getPorId(@PathVariable Long id) {
-        return direccionService.getDireccionById(id)
+    public ResponseEntity<DireccionAdminDTO> getPorId(@PathVariable Long id) {
+        return direccionService.getParaAdministracion(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -41,8 +44,8 @@ public class DireccionController {
      * GET /api/direcciones/cliente/{clienteId}
      */
     @GetMapping("/cliente/{clienteId}")
-    public List<Direccion> obtenerPorCliente(@PathVariable Long clienteId) {
-        return direccionService.obtenerDireccionesDeCliente(clienteId);
+    public List<DireccionAdminDTO> obtenerPorCliente(@PathVariable Long clienteId) {
+        return direccionService.obtenerParaCliente(clienteId);
     }
     
     /**
@@ -50,11 +53,18 @@ public class DireccionController {
      * GET /api/direcciones/cliente/{clienteId}/zona/{zonaId}
      */
     @GetMapping("/cliente/{clienteId}/zona/{zonaId}")
-    public List<Direccion> obtenerPorClienteYZona(
+    public List<DireccionAdminDTO> obtenerPorClienteYZona(
             @PathVariable Long clienteId, 
             @PathVariable Long zonaId) {
         
-        return direccionService.obtenerDireccionesEnZona(clienteId, zonaId);
+        return direccionService.obtenerDireccionesEnZona(clienteId, zonaId).stream()
+                .map(direccion -> new DireccionAdminDTO(
+                        direccion.getId(), direccion.getCliente().getId(),
+                        direccion.getCliente().getNombres() + " " + direccion.getCliente().getApellidos(),
+                        direccion.getZona().getId(), direccion.getZona().getNombreDistrito(),
+                        direccion.getAlias(), direccion.getLinea1(), direccion.getLinea2(),
+                        direccion.getReferencia(), direccion.isEsPrincipal()))
+                .toList();
     }
     
     /**
@@ -62,8 +72,14 @@ public class DireccionController {
      * GET /api/direcciones/principal/cliente/{clienteId}
      */
     @GetMapping("/principal/cliente/{clienteId}")
-    public ResponseEntity<Direccion> obtenerPrincipalDeCliente(@PathVariable Long clienteId) {
+    public ResponseEntity<DireccionAdminDTO> obtenerPrincipalDeCliente(@PathVariable Long clienteId) {
         return direccionService.obtenerDireccionPrincipal(clienteId)
+                .map(direccion -> new DireccionAdminDTO(
+                        direccion.getId(), direccion.getCliente().getId(),
+                        direccion.getCliente().getNombres() + " " + direccion.getCliente().getApellidos(),
+                        direccion.getZona().getId(), direccion.getZona().getNombreDistrito(),
+                        direccion.getAlias(), direccion.getLinea1(), direccion.getLinea2(),
+                        direccion.getReferencia(), direccion.isEsPrincipal()))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -83,8 +99,10 @@ public class DireccionController {
      * POST /api/direcciones/cliente/{clienteId}
      */
     @PostMapping("/cliente/{clienteId}")
-    public Direccion crearParaCliente(@PathVariable Long clienteId, @RequestBody Direccion direccion) {
-        return direccionService.crearDireccion(clienteId, direccion);
+    public DireccionAdminDTO crearParaCliente(
+            @PathVariable Long clienteId,
+            @Valid @RequestBody DireccionAdminRequestDTO request) {
+        return direccionService.crearParaAdministracion(clienteId, request);
     }
     
     /**
@@ -92,8 +110,10 @@ public class DireccionController {
      * PUT /api/direcciones/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Direccion> actualizar(@PathVariable Long id, @RequestBody Direccion datosActualizacion) {
-        return ResponseEntity.ok(direccionService.actualizarDireccion(id, datosActualizacion));
+    public ResponseEntity<DireccionAdminDTO> actualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody DireccionAdminRequestDTO request) {
+        return ResponseEntity.ok(direccionService.actualizarParaAdministracion(id, request));
     }
     
     /**

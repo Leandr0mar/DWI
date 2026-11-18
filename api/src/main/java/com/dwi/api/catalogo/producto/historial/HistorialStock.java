@@ -25,7 +25,7 @@ public class HistorialStock {
     private Producto producto;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_admin", nullable = false)
+    @JoinColumn(name = "id_admin")
     private Administrador administrador;
 
     @Column(name = "cantidad_alterada", nullable = false)
@@ -37,6 +37,12 @@ public class HistorialStock {
 
     @Column(columnDefinition = "TEXT")
     private String observacion;
+
+    @Column(name = "nombre_producto")
+    private String nombreProducto;
+
+    @Column(name = "sku_producto")
+    private String skuProducto;
 
     @CreationTimestamp
     @Column(name = "fecha_movimiento", updatable = false)

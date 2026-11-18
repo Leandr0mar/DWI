@@ -22,5 +22,6 @@ public record ProductoRequestDTO(
         Set<@NotNull Long> saboresIds,
         @NotNull @URL String urlImagen,
         @NotBlank @Size(max = 30) String pesoVolumen,
-        @NotNull TipoPresentacion tipoPresentacion
+        @NotNull TipoPresentacion tipoPresentacion,
+        Set<@NotNull Long> ofertasIds
 ) {}

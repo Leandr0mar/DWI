@@ -3,6 +3,7 @@ package com.dwi.api.catalogo.producto.model;
 import com.dwi.api.catalogo.categoria.model.Categoria;
 import com.dwi.api.catalogo.sabor.model.Sabor;
 import com.dwi.api.common.audit.BaseEntity;
+import com.dwi.api.oferta.model.Oferta;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -83,4 +84,7 @@ public class Producto extends BaseEntity {
     )
 
     private Set<Sabor> sabores = new HashSet<>();
+
+    @ManyToMany(mappedBy = "productos", fetch = FetchType.LAZY)
+    private Set<Oferta> ofertas = new HashSet<>();
 }

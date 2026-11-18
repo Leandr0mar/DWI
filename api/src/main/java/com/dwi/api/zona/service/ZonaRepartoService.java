@@ -46,7 +46,7 @@ public class ZonaRepartoService {
         // Verificar unicidad del nombreDistrito
         if (zona.getNombreDistrito() != null && 
             zonaRepartoRepository.existsByNombreDistrito(zona.getNombreDistrito())) {
-            throw new RuntimeException("Ya existe una zona con el nombre: " + zona.getNombreDistrito());
+            throw new IllegalStateException("Ya existe una zona con el nombre: " + zona.getNombreDistrito());
         }
         
         ZonaReparto entidadCreada = zonaRepartoRepository.save(zona);
@@ -65,7 +65,7 @@ public class ZonaRepartoService {
                         // Verificar unicidad si el nombre está cambiando
                         if (!nombreNuevo.equalsIgnoreCase(zona.getNombreDistrito())) {
                             if (zonaRepartoRepository.existsByNombreDistrito(nombreNuevo)) {
-                                throw new RuntimeException("Ya existe una zona con el nombre: " + nombreNuevo);
+                                throw new IllegalStateException("Ya existe una zona con el nombre: " + nombreNuevo);
                             }
                         }
                         zona.setNombreDistrito(nombreNuevo);

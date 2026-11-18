@@ -1,7 +1,10 @@
 package com.dwi.api.administrador.controller;
 
+import com.dwi.api.administrador.dto.AdministradorDTO;
+import com.dwi.api.administrador.dto.AdministradorRequestDTO;
 import com.dwi.api.administrador.model.Administrador;
 import com.dwi.api.administrador.service.AdministradorService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +25,7 @@ public class AdministradorController {
      * GET /api/v1/admin/administradores
      */
     @GetMapping
-    public List<Administrador> listarTodos() {
+    public List<AdministradorDTO> listarTodos() {
         return administradorService.getAllAdministradores();
     }
     
@@ -31,8 +34,10 @@ public class AdministradorController {
      * GET /api/v1/admin/administradores/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Administrador> getPorId(@PathVariable Long id) {
+    public ResponseEntity<AdministradorDTO> getPorId(@PathVariable Long id) {
         return administradorService.getAdministradorById(id)
+                .map(admin -> new AdministradorDTO(admin.getId(), admin.getUuid(), admin.getNombres(),
+                        admin.getApellidos(), admin.getEmail(), admin.getAvatarUrl(), admin.getNivelAcceso().name(), admin.getUltimoAcceso()))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -42,8 +47,8 @@ public class AdministradorController {
      * POST /api/v1/admin/administradores
      */
     @PostMapping
-    public Administrador crear(@RequestBody Administrador administrador) {
-        return administradorService.crearAdministrador(administrador);
+    public AdministradorDTO crear(@Valid @RequestBody AdministradorRequestDTO request) {
+        return administradorService.crearAdministrador(request);
     }
     
     /**
@@ -51,12 +56,13 @@ public class AdministradorController {
      * PUT /api/v1/admin/administradores/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Administrador> actualizar(@PathVariable Long id, @RequestBody Administrador datosActualizacion) {
+    public ResponseEntity<AdministradorDTO> actualizar(@PathVariable Long id, @Valid @RequestBody AdministradorRequestDTO request) {
         try {
-            Administrador administradorActualizado = administradorService.actualizarAdministrador(id, datosActualizacion);
+            AdministradorDTO administradorActualizado = administradorService.actualizarAdministrador(id, request);
             return ResponseEntity.ok(administradorActualizado);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            if ("Administrador no encontrado.".equals(e.getMessage())) return ResponseEntity.notFound().build();
+            throw e;
         }
     }
     
@@ -69,8 +75,9 @@ public class AdministradorController {
         try {
             administradorService.eliminarAdministrador(id);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            if ("Administrador no encontrado.".equals(e.getMessage())) return ResponseEntity.notFound().build();
+            throw e;
         }
     }
     
@@ -79,8 +86,11 @@ public class AdministradorController {
      * GET /api/v1/admin/administradores/nivel/{nivel}
      */
     @GetMapping("/nivel/{nivel}")
-    public List<Administrador> listarPorNivel(@PathVariable Administrador.NivelAcceso nivel) {
-        return administradorService.getAdministradoresPorNivel(nivel);
+    public List<AdministradorDTO> listarPorNivel(@PathVariable Administrador.NivelAcceso nivel) {
+        return administradorService.getAdministradoresPorNivel(nivel).stream()
+                .map(admin -> new AdministradorDTO(admin.getId(), admin.getUuid(), admin.getNombres(),
+                        admin.getApellidos(), admin.getEmail(), admin.getAvatarUrl(), admin.getNivelAcceso().name(), admin.getUltimoAcceso()))
+                .toList();
     }
     
     /**

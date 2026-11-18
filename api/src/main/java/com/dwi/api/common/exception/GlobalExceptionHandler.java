@@ -2,6 +2,7 @@ package com.dwi.api.common.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import com.dwi.api.common.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,60 +11,53 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /** Convierte errores comunes del dominio y de validación a respuestas HTTP consistentes. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({EntityNotFoundException.class, ResourceNotFoundException.class})
-    public ResponseEntity<Map<String, String>> handleNotFound(RuntimeException exception) {
+    public ResponseEntity<ApiResponse> handleNotFound(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("message", "No se encontró el recurso solicitado."));
+                .body(ApiResponse.notFound());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleInvalidBody(MethodArgumentNotValidException exception) {
-        Map<String, String> errors = exception.getBindingResult().getFieldErrors().stream()
-                .collect(Collectors.toMap(
-                        error -> error.getField(),
-                        error -> error.getDefaultMessage() == null ? "Valor inválido" : error.getDefaultMessage(),
-                        (first, ignored) -> first,
-                        LinkedHashMap::new
-                ));
-        return ResponseEntity.badRequest().body(Map.of(
-                "message", "Revisa los campos e inténtalo de nuevo.",
-                "fieldErrors", errors
-        ));
+    public ResponseEntity<ApiResponse> handleInvalidBody(MethodArgumentNotValidException exception) {
+        return ResponseEntity.badRequest().body(ApiResponse.invalidRequest());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException exception) {
-        return ResponseEntity.badRequest().body(Map.of("message", "Revisa los datos e inténtalo de nuevo."));
+    public ResponseEntity<ApiResponse> handleConstraintViolation(ConstraintViolationException exception) {
+        return ResponseEntity.badRequest().body(ApiResponse.invalidRequest());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException exception) {
-        return ResponseEntity.badRequest().body(Map.of("message", "No se pudo procesar la solicitud con esos datos."));
+    public ResponseEntity<ApiResponse> handleIllegalArgument(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().body(ApiResponse.invalidRequest());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse> handleIllegalState(IllegalStateException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.conflict());
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Map<String, String>> handleAuthentication(AuthenticationException exception) {
+    public ResponseEntity<ApiResponse> handleAuthentication(AuthenticationException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo."));
+                .body(ApiResponse.unauthorized());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException exception) {
+    public ResponseEntity<ApiResponse> handleAccessDenied(AccessDeniedException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(Map.of("message", "No tienes permiso para realizar esta acción."));
+                .body(ApiResponse.forbidden());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleUnexpected(Exception exception) {
+    public ResponseEntity<ApiResponse> handleUnexpected(Exception exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Ocurrió un problema inesperado. Inténtalo nuevamente más tarde."));
+                .body(ApiResponse.unexpected());
     }
 }

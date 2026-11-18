@@ -15,6 +15,9 @@ interface ProductoDetalle {
   nombre: string
   descripcion: string | null
   precioBase: number
+  precioFinal?: number
+  nombreOferta?: string | null
+  porcentajeDescuento?: number | null
   maxSabores: number
   stockDisponible: number
   categoria: string
@@ -62,6 +65,7 @@ export default function ProductosDetalle() {
   }
 
   const producto = productoQuery.data
+  const precioFinal = producto.precioFinal ?? producto.precioBase
   const imagen = producto.urlImagen?.trim() || imagenProductoPredeterminada
   const sabores = producto.sabores.length > 0 ? producto.sabores.join(', ') : 'Sin sabores asignados'
   const productoDisponible = producto.stockDisponible > 0
@@ -71,7 +75,7 @@ export default function ProductosDetalle() {
       id: producto.id,
       nombre: producto.nombre,
       sabor: sabores,
-      precio: producto.precioBase,
+      precio: precioFinal,
       imagen,
     }
 
@@ -95,6 +99,7 @@ export default function ProductosDetalle() {
                 onError={(event) => { event.currentTarget.src = imagenProductoPredeterminada }}
               />
               <span className="badge-artesanal">{producto.categoria || 'Catálogo'}</span>
+              {producto.porcentajeDescuento != null && <span className="badge-oferta">-{producto.porcentajeDescuento}%</span>}
               <span className="badge-temporada">{productoDisponible ? 'Disponible' : 'Agotado'}</span>
             </div>
 
@@ -130,8 +135,9 @@ export default function ProductosDetalle() {
             </div>
 
             <div className="detalle-precio-box">
-              <span className="precio-actual">S/ {producto.precioBase.toFixed(2)}</span>
-              <span className="iva-tag">Precio base</span>
+              {producto.porcentajeDescuento != null && <span className="precio-original">S/ {producto.precioBase.toFixed(2)}</span>}
+              <span className="precio-actual">S/ {precioFinal.toFixed(2)}</span>
+              <span className="iva-tag">{producto.porcentajeDescuento != null ? `${producto.nombreOferta || 'Oferta'} · ${producto.porcentajeDescuento}% de descuento` : 'Precio base'}</span>
               {producto.pesoVolumen && <span className="litro-tag">{producto.pesoVolumen}</span>}
             </div>
 

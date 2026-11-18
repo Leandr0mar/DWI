@@ -3,6 +3,8 @@ package com.dwi.api.pedido.model;
 import com.dwi.api.common.audit.BaseEntity;
 import com.dwi.api.direccion.model.Direccion;
 import com.dwi.api.cliente.model.Cliente;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +16,8 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "pedido")
+@SQLDelete(sql = "UPDATE pedido SET is_deleted = true WHERE id_pedido=?")
+@SQLRestriction("is_deleted = false")
 public class Pedido extends BaseEntity {
 
     @Id
@@ -50,6 +54,10 @@ public class Pedido extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_pago", nullable = false)
     private EstadoPago estadoPago = EstadoPago.PENDIENTE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_pedido", nullable = false)
+    private HistorialEstadoPedido.EstadoPedido estadoPedido = HistorialEstadoPedido.EstadoPedido.PREPARANDO;
 
     public enum EstadoPago {
         PENDIENTE, PAGADO, FALLIDO, REEMBOLSADO

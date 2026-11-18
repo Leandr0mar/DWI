@@ -1,0 +1,138 @@
+{
+  "planHash": "96a357843e11a0a241d301b25d52ef24013ecac03bdc18a916bf19a9a2ab03d8",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-11-18T01:02:53.2500848Z",
+  "retryCount": 2,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 15436,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "production-build",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E ui@0.0.0 build\r\n\u003E tsc -b \u0026\u0026 vite build\r\n\r\n\u001B[36mvite v8.2.2 \u001B[32mbuilding client environment for production...\u001B[36m\u001B[39m\r\ntransforming...\r\n\u2713 2057 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/index.html                                                                                   0.47 kB \u2502 gzip:   0.30 kB\r\ndist/assets/Logo-universidad-D6Uhp0hq.png                                                         7.11 kB\r\ndist/assets/empresa-1-xykBTyQg.jpg                                                               21.41 kB\r\ndist/assets/empresa-3-BfmK4ASL.jpg                                                               21.76 kB\r\ndist/assets/pd_1-J8RrS54_.jpg                                                                    37.15 kB\r\ndist/assets/gelato-ice-cream-scooping-colorful-and-delicious-dessert-free-photo-WoRPa6fy.jpg     47.38 kB\r\ndist/assets/ai-generated-caught-raw-seafood-food-freshly-ai-generated-photo-ChU28_G-.jpg         51.19 kB\r\ndist/assets/consumo-energetico-heladeria-Cs8m8eCE.jpg                                            51.45 kB\r\ndist/assets/pd_2-CC3p5DEn.jpg                                                                    52.21 kB\r\ndist/assets/empresa-2-yzbSK2Zs.jpg                                                               61.89 kB\r\ndist/assets/img2-ZSYMSt-1.png                                                                    85.74 kB\r\ndist/assets/cliente-1-Dys89xEU.jpg                                                               91.99 kB\r\ndist/assets/pd_3-DeJTJs4O.jpg                                                                    95.02 kB\r\ndist/assets/img3-wfAdnLzA.png                                                                   114.48 kB\r\ndist/assets/img3-DKaMmOdL.webp                                                                  129.02 kB\r\ndist/assets/cliente-3-Dq-oWKcO.jpg                                                              130.46 kB\r\ndist/assets/img1-DbvGYsPr.jpg                                                                   139.91 kB\r\ndist/assets/img1-Uy7zuTkZ.jpg                                                                   212.03 kB\r\ndist/assets/img2-Bu80nMqT.jpg                                                                   216.95 kB\r\ndist/assets/img_logo3-BbNj_7z3.png                                                              432.49 kB\r\ndist/assets/cliente-2-CRI925X5.jpg                                                            4,951.86 kB\r\ndist/assets/index-DGCxv61V.css                                                                  125.67 kB \u2502 gzip:  24.43 kB\r\ndist/assets/index-B1Y95F_2.js                                                                   529.23 kB \u2502 gzip: 164.57 kB\r\n\r\n\u001B[32m\u2713 built in 2.47s\u001B[39m\r\n\u001B[33m[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001B[39m\r\n",
+        "durationMs": 6866
+      },
+      {
+        "name": "lint",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E ui@0.0.0 lint\r\n\u003E oxlint\r\n\r\nsrc/componets/productos/FiltrosProductos.tsx:12:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.\r\nsrc/componets/common/layout/Layout.tsx:19:17: warning react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.\r\nsrc/pages/auth/registro.tsx:33:20: warning react(incompatible-library): Use of incompatible library help: This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized\r\nsrc/componets/common/carrito_flotante/CarritoModal.tsx:20:7: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.\r\n",
+        "durationMs": 562
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E ui@0.0.0 test\r\n\u003E vitest run\r\n\r\n\r\n RUN  v4.1.12 C:/Repositorios/DWI/ui\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  4 passed (4)\r\n   Start at  20:02:51\r\n   Duration  295ms (transform 40ms, setup 0ms, import 57ms, tests 27ms, environment 0ms)\r\n\r\n",
+        "durationMs": 1527,
+        "testResults": {
+          "testFramework": "vitest",
+          "runnerDetectedFrom": "package_json",
+          "testsTotal": 4,
+          "testsPassed": 4,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": false
+        }
+      },
+      {
+        "name": "dev-server-serves-home",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 200\n\u003C!doctype html\u003E\n\u003Chtml lang=\u0022en\u0022\u003E\n  \u003Chead\u003E\n    \u003Cscript type=\u0022module\u0022\u003Eimport { injectIntoGlobalHook } from \u0022/@react-refresh\u0022;\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () =\u003E {};\nwindow.$RefreshSig$ = () =\u003E (type) =\u003E type;\u003C/script\u003E\n\n    \u003Cscript type=\u0022module\u0022 src=\u0022/@vite/client\u0022\u003E\u003C/script\u003E\n\n    \u003Cmeta charset=\u0022UTF-8\u0022 /\u003E\n    \u003Clink rel=\u0022icon\u0022 type=\u0022image/svg\u002Bxml\u0022 href=\u0022/icon.svg?v=1\u0022 sizes=\u0022any\u0022 /\u003E\n    \u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022 /\u003E\n    \u003Ctitle\u003Ecremissimo\u003C/title\u003E\n  \u003C/head\u003E\n  \u003Cbody\u003E\n    \u003Cdiv id=\u0022root\u0022\u003E\u003C/div\u003E\n    \u003Cscript type=\u0022module\u0022 src=\u0022/src/main.tsx\u0022\u003E\u003C/script\u003E\n  \u003C/body\u003E\n\u003C/html\u003E\n\n--- server output ---\n\r\n\u003E ui@0.0.0 dev\r\n\u003E vite --host 127.0.0.1 --port 5173 --strictPort\r\n\r\n\r\n  \u001B[32m\u001B[1mVITE\u001B[22m v8.2.2\u001B[39m  \u001B[2mready in \u001B[0m\u001B[1m628\u001B[22m\u001B[2m\u001B[0m ms\u001B[22m\r\n\r\n  \u001B[32m\u279C\u001B[39m  \u001B[1mLocal\u001B[22m:   \u001B[36mhttp://127.0.0.1:\u001B[1m5173\u001B[22m/\u001B[39m\r\n",
+        "durationMs": 1566
+      }
+    ],
+    "executions": [
+      {
+        "source": "setup[0]",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "ci"
+        ],
+        "cwd": "C:\\Repositorios\\DWI\\ui",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "production-build",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "build"
+        ],
+        "cwd": "C:\\Repositorios\\DWI\\ui",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "lint",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "lint"
+        ],
+        "cwd": "C:\\Repositorios\\DWI\\ui",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "test"
+        ],
+        "cwd": "C:\\Repositorios\\DWI\\ui",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "dev-server-serves-home",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "dev",
+          "--",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          "5173",
+          "--strictPort"
+        ],
+        "cwd": "C:\\Repositorios\\DWI\\ui",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}

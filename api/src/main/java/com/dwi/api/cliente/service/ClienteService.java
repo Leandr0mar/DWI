@@ -1,6 +1,8 @@
 package com.dwi.api.cliente.service;
 
 import com.dwi.api.cliente.dto.ClienteRegistroDTO;
+import com.dwi.api.cliente.dto.ClienteAdminDTO;
+import com.dwi.api.cliente.dto.ClienteAdminRequestDTO;
 import com.dwi.api.cliente.model.Cliente;
 import com.dwi.api.cliente.repository.ClienteRepository;
 import com.dwi.api.usuario.model.Usuario;
@@ -71,6 +73,53 @@ public class ClienteService {
     public List<Cliente> getAllClientes() {
         return clienteRepository.findAll();
     }
+
+    public List<ClienteAdminDTO> listarParaAdministracion() {
+        return clienteRepository.findAll().stream().map(this::toAdminDto).toList();
+    }
+
+    public Optional<ClienteAdminDTO> getParaAdministracion(Long id) {
+        return clienteRepository.findById(id).map(this::toAdminDto);
+    }
+
+    public ClienteAdminDTO crearDesdeAdministracion(ClienteAdminRequestDTO request) {
+        if (request.password() == null || request.password().isBlank()) {
+            throw new IllegalArgumentException("La contraseña es obligatoria para crear un cliente.");
+        }
+        validarEmailUnico(request.email(), null);
+        validarDniUnico(limpiarOpcional(request.dni()), null);
+
+        Cliente cliente = new Cliente();
+        cliente.setNombres(request.nombres().trim());
+        cliente.setApellidos(request.apellidos().trim());
+        cliente.setEmail(request.email().trim().toLowerCase());
+        cliente.setAvatarUrl(limpiarOpcional(request.avatarUrl()));
+        cliente.setPasswordHash(passwordEncoder.encode(request.password()));
+        cliente.setRolSistema(Usuario.RolSistema.CLIENTE);
+        cliente.setDni(limpiarOpcional(request.dni()));
+        cliente.setTelefono(limpiarOpcional(request.telefono()));
+        return toAdminDto(clienteRepository.save(cliente));
+    }
+
+    public ClienteAdminDTO actualizarDesdeAdministracion(Long id, ClienteAdminRequestDTO request) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado."));
+        validarEmailUnico(request.email(), id);
+        validarDniUnico(limpiarOpcional(request.dni()), id);
+
+        cliente.setNombres(request.nombres().trim());
+        cliente.setApellidos(request.apellidos().trim());
+        cliente.setEmail(request.email().trim().toLowerCase());
+        if (request.avatarUrl() != null) {
+            cliente.setAvatarUrl(limpiarOpcional(request.avatarUrl()));
+        }
+        cliente.setDni(limpiarOpcional(request.dni()));
+        cliente.setTelefono(limpiarOpcional(request.telefono()));
+        if (request.password() != null && !request.password().isBlank()) {
+            cliente.setPasswordHash(passwordEncoder.encode(request.password()));
+        }
+        return toAdminDto(clienteRepository.save(cliente));
+    }
     
     /**
      * Crea un nuevo cliente
@@ -132,5 +181,38 @@ public class ClienteService {
      */
     public boolean existePorDni(String dni) {
         return clienteRepository.findByDni(dni).isPresent();
+    }
+
+    private void validarEmailUnico(String email, Long idActual) {
+        usuarioRepository.findByEmail(email.trim()).ifPresent(existing -> {
+            if (!existing.getId().equals(idActual)) {
+                throw new IllegalArgumentException("Ya existe una cuenta con ese email.");
+            }
+        });
+    }
+
+    private void validarDniUnico(String dni, Long idActual) {
+        if (dni == null) return;
+        clienteRepository.findByDni(dni).ifPresent(existing -> {
+            if (!existing.getId().equals(idActual)) {
+                throw new IllegalArgumentException("Ya existe un cliente con ese DNI.");
+            }
+        });
+    }
+
+    private String limpiarOpcional(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private ClienteAdminDTO toAdminDto(Cliente cliente) {
+        return new ClienteAdminDTO(
+                cliente.getId(),
+                cliente.getUuid(),
+                cliente.getNombres(),
+                cliente.getApellidos(),
+                cliente.getEmail(),
+                cliente.getAvatarUrl(),
+                cliente.getDni(),
+                cliente.getTelefono());
     }
 }

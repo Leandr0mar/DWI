@@ -16,6 +16,9 @@ export interface ProductoCatalogo extends Producto {
   descripcion: string | null
   pesoVolumen: string | null
   tipoPresentacion: string | null
+  precioOriginal?: number
+  porcentajeDescuento?: number | null
+  nombreOferta?: string | null
 }
 
 interface Props {
@@ -32,6 +35,7 @@ function ProductoCard({ producto }: Props) {
       <div className="producto-imagen-wrapper">
         <img className="producto-imagen" src={producto.imagen} alt={producto.nombre} loading="lazy" />
         <span className="producto-categoria">{producto.categoria || 'Catálogo'}</span>
+        {producto.porcentajeDescuento != null && <span className="producto-oferta-badge">-{producto.porcentajeDescuento}%</span>}
       </div>
       <div className="producto-info">
         <h3>{producto.nombre}</h3>
@@ -42,7 +46,10 @@ function ProductoCard({ producto }: Props) {
           {producto.pesoVolumen && <span>{producto.pesoVolumen}</span>}
         </div>
         <div className="producto-footer">
-          <strong className="producto-precio">S/. {producto.precio.toFixed(2)}</strong>
+          <span className="producto-precio-grupo">
+            {producto.precioOriginal != null && producto.porcentajeDescuento != null && <del className="producto-precio-original">{`S/. ${producto.precioOriginal.toFixed(2)}`}</del>}
+            <strong className="producto-precio">S/. {producto.precio.toFixed(2)}</strong>
+          </span>
           <span className={`producto-disponibilidad${producto.stockDisponible > 0 ? '' : ' agotado'}`}>
             <span aria-hidden="true">●</span> {producto.stockDisponible > 0 ? 'Disponible' : 'Agotado'}
           </span>

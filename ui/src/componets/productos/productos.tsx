@@ -14,6 +14,9 @@ interface ProductoBackend {
   nombre: string
   descripcion: string | null
   precioBase: number
+  precioFinal?: number
+  nombreOferta?: string | null
+  porcentajeDescuento?: number | null
   stockDisponible: number
   categoria: string
   sabores: string[]
@@ -43,7 +46,10 @@ const fetchProductos = async (): Promise<ProductoCatalogo[]> => {
     sabor: producto.sabores.length > 0
       ? producto.sabores.join(', ')
       : 'Varios sabores',
-    precio: producto.precioBase,
+    precio: producto.precioFinal ?? producto.precioBase,
+    precioOriginal: producto.porcentajeDescuento != null ? producto.precioBase : undefined,
+    porcentajeDescuento: producto.porcentajeDescuento,
+    nombreOferta: producto.nombreOferta,
     imagen: producto.urlImagen?.trim() || imagenProductoPredeterminada,
   }))
 }

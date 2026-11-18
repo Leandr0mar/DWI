@@ -123,6 +123,20 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.badge-oferta {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: #b8342b;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+
 .detalle-galeria-minaturas {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -246,6 +260,12 @@
   font-size: 2rem;
   font-weight: 900;
   color: #1e1e1e;
+}
+
+.precio-original {
+  color: #85796e;
+  font-size: 1.1rem;
+  text-decoration: line-through;
 }
 
 .iva-tag {

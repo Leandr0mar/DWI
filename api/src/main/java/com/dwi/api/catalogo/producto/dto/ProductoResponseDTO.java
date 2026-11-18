@@ -12,9 +12,15 @@ public record ProductoResponseDTO(
         BigDecimal precioBase,
         Integer maxSabores,
         Integer stockDisponible,
+        Long categoriaId,
         String categoria,
+        List<Long> saboresIds,
         List<String> sabores,
         String urlImagen,
         String pesoVolumen,
-        String tipoPresentacion
+        String tipoPresentacion,
+        List<Long> ofertasIds,
+        BigDecimal precioFinal,
+        String nombreOferta,
+        BigDecimal porcentajeDescuento
 ) {}

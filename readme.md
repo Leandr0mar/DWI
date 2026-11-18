@@ -139,6 +139,7 @@ La carpeta `componets` aparece escrita así en el proyecto y las importaciones d
 | `/login` | Inicio de sesión |
 | `/registro` | Registro de cliente |
 | `/recuperar-contrasena` | Solicitud de recuperación de contraseña |
+| `/administrador/dashboard` | Panel de administración; requiere el rol `ADMIN` |
 
 ## API disponible
 
@@ -147,7 +148,7 @@ Base local: `http://localhost:8080`.
 | Método | Endpoint | Descripción | Acceso |
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/catalogo/productos` | Lista productos del catálogo | Público |
-| `GET` | `/api/v1/catalogo/productos/{uuid}` | Consulta el detalle por UUID | Público |
+| `GET` | `/api/v1/catalogo/productos/uuid/{uuid}` | Consulta el detalle por UUID | Público |
 | `GET` | `/api/v1/catalogo/sabores` | Lista sabores disponibles | Público |
 | `GET` | `/api/v1/auth/csrf` | Obtiene el token CSRF para solicitudes protegidas | Público |
 | `POST` | `/api/v1/auth/registro` | Registra un cliente | Público |
@@ -155,9 +156,15 @@ Base local: `http://localhost:8080`.
 | `GET` | `/api/v1/auth/me` | Devuelve el perfil de la sesión actual | Requiere autenticación |
 | `POST` | `/api/v1/auth/logout` | Cierra sesión y elimina la cookie JWT | Requiere autenticación |
 | `POST` | `/api/v1/auth/recuperar-password` | Responde de forma genérica a la solicitud | Público; flujo de recuperación pendiente |
-| `POST` | `/api/v1/admin/productos` | Crea un producto | Rol ADMIN |
-| `PUT` | `/api/v1/admin/productos/{id}` | Actualiza un producto | Rol ADMIN |
-| `DELETE` | `/api/v1/admin/productos/{id}` | Elimina un producto | Rol ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/v1/catalogo/productos` | CRUD de productos; las escrituras incluyen el ID de categoría y sabores | Rol ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/v1/catalogo/categorias` | CRUD de categorías | Lecturas públicas; escrituras ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/v1/catalogo/sabores` | CRUD de sabores | Lecturas públicas; escrituras ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/v1/admin/administradores` | Gestión segura de cuentas administrativas | Rol ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/clientes` | Gestión de clientes sin exponer hashes de contraseña | Rol ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/direcciones` | Gestión de direcciones de clientes | Rol ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/zonas` | Gestión de zonas de reparto | Rol ADMIN |
+| `GET/POST/PUT/DELETE` | `/api/pedidos` | Creación con detalle validado, cambios de estado e historial; solo pedidos pendientes sin pago iniciado se pueden eliminar | Rol ADMIN |
+| `GET/POST` | `/api/v1/admin/stock-movements` | Consulta y registro de movimientos; las ventas se generan desde pedidos y el historial es inmutable | Rol ADMIN |
 
 Los productos exponen, entre otros datos, UUID, SKU, nombre, descripción, precio base, categoría, sabores, imagen, peso/volumen y tipo de presentación. El detalle de los campos de solicitud y respuesta está en los DTO del paquete `catalogo.producto`.
 
@@ -171,7 +178,7 @@ Los productos exponen, entre otros datos, UUID, SKU, nombre, descripción, preci
 - Carrito flotante en la interfaz, con agrupación de productos iguales, modificación de cantidad, eliminación y subtotal.
 - Diseño adaptable a escritorio y móvil, transiciones de navegación y elementos visuales del proyecto.
 
-El carrito de la interfaz aún no equivale a un pedido persistido en el backend. Las entidades de pedido, carrito, Stripe y las páginas de compra/administración constituyen estructura de dominio o pantallas en desarrollo; el checkout, el cobro y la administración completa no deben considerarse flujos integrados solo por la existencia de esos archivos.
+El panel de administración está conectado a los endpoints de catálogo, inventario, pedidos, clientes, direcciones, zonas y administradores. La creación de pedidos valida dirección, disponibilidad, sabores y stock; los movimientos de stock se registran como historial no editable. Los cobros de Stripe y la persistencia del carrito de compra no forman parte de esta integración.
 
 ## Requisitos
 

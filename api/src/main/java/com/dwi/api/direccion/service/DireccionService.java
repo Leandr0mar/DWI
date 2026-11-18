@@ -3,6 +3,8 @@ package com.dwi.api.direccion.service;
 import com.dwi.api.cliente.model.Cliente;
 import com.dwi.api.cliente.repository.ClienteRepository;
 import com.dwi.api.common.exception.ResourceNotFoundException;
+import com.dwi.api.direccion.dto.DireccionAdminDTO;
+import com.dwi.api.direccion.dto.DireccionAdminRequestDTO;
 import com.dwi.api.direccion.model.Direccion;
 import com.dwi.api.direccion.repository.DireccionRepository;
 import com.dwi.api.zona.model.ZonaReparto;
@@ -35,6 +37,14 @@ public class DireccionService {
 
     public List<Direccion> listarTodas() {
         return direccionRepository.findAll();
+    }
+
+    public List<DireccionAdminDTO> listarParaAdministracion() {
+        return direccionRepository.findAll().stream().map(this::toAdminDto).toList();
+    }
+
+    public Optional<DireccionAdminDTO> getParaAdministracion(Long id) {
+        return direccionRepository.findById(id).map(this::toAdminDto);
     }
     
     /**
@@ -69,6 +79,21 @@ public class DireccionService {
         }
         
         return direccionRepository.save(direccion);
+    }
+
+    public DireccionAdminDTO crearParaAdministracion(Long clienteId, DireccionAdminRequestDTO request) {
+        Direccion direccion = new Direccion();
+        direccion.setZona(obtenerZona(request.zonaId()));
+        direccion.setAlias(request.alias().trim());
+        direccion.setLinea1(request.linea1().trim());
+        direccion.setLinea2(request.linea2());
+        direccion.setReferencia(request.referencia());
+        direccion.setEsPrincipal(request.esPrincipal());
+        return toAdminDto(crearDireccion(clienteId, direccion));
+    }
+
+    public List<DireccionAdminDTO> obtenerParaCliente(Long clienteId) {
+        return obtenerDireccionesDeCliente(clienteId).stream().map(this::toAdminDto).toList();
     }
     
     /**
@@ -113,15 +138,29 @@ public class DireccionService {
                 })
                 .orElseThrow(() -> new RuntimeException("Dirección no encontrada con ID: " + id));
     }
+
+    public DireccionAdminDTO actualizarParaAdministracion(Long id, DireccionAdminRequestDTO request) {
+        Direccion direccion = direccionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada."));
+        direccion.setZona(obtenerZona(request.zonaId()));
+        direccion.setAlias(request.alias().trim());
+        direccion.setLinea1(request.linea1().trim());
+        direccion.setLinea2(request.linea2());
+        direccion.setReferencia(request.referencia());
+        direccion.setEsPrincipal(request.esPrincipal());
+        if (direccion.isEsPrincipal()) {
+            desmarcarOtrasDireccionesPrincipales(direccion.getCliente(), direccion.getId());
+        }
+        return toAdminDto(direccionRepository.save(direccion));
+    }
     
     /**
      * Elimina una dirección por su ID
      */
     public void eliminarDireccion(Long id) {
-        if (!direccionRepository.existsById(id)) {
-            throw new RuntimeException("Dirección no encontrada con ID: " + id);
-        }
-        direccionRepository.deleteById(id);
+        Direccion direccion = direccionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada."));
+        direccionRepository.delete(direccion);
     }
     
     /**
@@ -155,5 +194,19 @@ public class DireccionService {
                 .toList();
         direccionesPrincipales.forEach(direccion -> direccion.setEsPrincipal(false));
         direccionRepository.saveAll(direccionesPrincipales);
+    }
+
+    private DireccionAdminDTO toAdminDto(Direccion direccion) {
+        return new DireccionAdminDTO(
+                direccion.getId(),
+                direccion.getCliente().getId(),
+                direccion.getCliente().getNombres() + " " + direccion.getCliente().getApellidos(),
+                direccion.getZona().getId(),
+                direccion.getZona().getNombreDistrito(),
+                direccion.getAlias(),
+                direccion.getLinea1(),
+                direccion.getLinea2(),
+                direccion.getReferencia(),
+                direccion.isEsPrincipal());
     }
 }

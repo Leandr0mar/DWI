@@ -47,7 +47,7 @@ public class CategoriaController {
     public Categoria crear(@RequestBody Categoria categoria) {
         // Verificar unicidad del nombre
         if (categoria.getNombre() != null && categoriaRepository.existsByNombre(categoria.getNombre())) {
-            throw new RuntimeException("Ya existe una categoría con el nombre: " + categoria.getNombre());
+            throw new IllegalStateException("Ya existe una categoría con el nombre: " + categoria.getNombre());
         }
         
         Categoria entidadCreada = categoriaRepository.save(categoria);
@@ -67,7 +67,7 @@ public class CategoriaController {
                         // Verificar unicidad si el nombre está cambiando
                         if (!nombreNuevo.equalsIgnoreCase(categoria.getNombre())) {
                             if (categoriaRepository.existsByNombre(nombreNuevo)) {
-                                throw new RuntimeException("Ya existe una categoría con el nombre: " + nombreNuevo);
+                                throw new IllegalStateException("Ya existe una categoría con el nombre: " + nombreNuevo);
                             }
                         }
                         categoria.setNombre(nombreNuevo);

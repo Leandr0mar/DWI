@@ -45,7 +45,7 @@ public class SaborService {
     public Sabor crearSabor(Sabor sabor) {
         // Verificar unicidad del nombre
         if (sabor.getNombre() != null && saborRepository.existsByNombre(sabor.getNombre())) {
-            throw new RuntimeException("Ya existe un sabor con el nombre: " + sabor.getNombre());
+            throw new IllegalStateException("Ya existe un sabor con el nombre: " + sabor.getNombre());
         }
         
         Sabor entidadCreada = saborRepository.save(sabor);
@@ -63,7 +63,7 @@ public class SaborService {
                         // Verificar unicidad si el nombre está cambiando
                         if (!nombreNuevo.equalsIgnoreCase(sabor.getNombre())) {
                             if (saborRepository.existsByNombre(nombreNuevo)) {
-                                throw new RuntimeException("Ya existe un sabor con el nombre: " + nombreNuevo);
+                                throw new IllegalStateException("Ya existe un sabor con el nombre: " + nombreNuevo);
                             }
                         }
                         sabor.setNombre(nombreNuevo);
