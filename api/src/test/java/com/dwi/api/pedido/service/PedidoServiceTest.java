@@ -11,7 +11,7 @@ import com.dwi.api.direccion.repository.DireccionRepository;
 import com.dwi.api.oferta.dto.OfertaProductoProjection;
 import com.dwi.api.pedido.model.Pedido;
 import com.dwi.api.pedido.model.DetallePedido;
-import com.dwi.api.pedido.dto.PedidoCrearRequestDTO;
+import com.dwi.api.pedido.dto.PedidoCheckoutRequestDTO;
 import com.dwi.api.pedido.repository.DetallePedidoRepository;
 import com.dwi.api.pedido.repository.HistorialEstadoPedidoRepository;
 import com.dwi.api.pedido.repository.PedidoRepository;
@@ -109,6 +109,7 @@ class PedidoServiceTest {
         producto.setStockDisponible(5);
         producto.setMaxSabores(1);
         when(clienteRepository.findById(2L)).thenReturn(Optional.of(cliente));
+        when(clienteRepository.findByEmail("ana@example.test")).thenReturn(Optional.of(cliente));
         when(direccionRepository.findById(3L)).thenReturn(Optional.of(direccion));
         when(productoRepository.findById(7L)).thenReturn(Optional.of(producto));
         when(ofertaService.listarVigentes(List.of(7L))).thenReturn(List.of(new OfertaProductoProjection(
@@ -128,12 +129,10 @@ class PedidoServiceTest {
             return pedido;
         });
 
-        PedidoCrearRequestDTO request = new PedidoCrearRequestDTO(
-                2L,
+        PedidoCheckoutRequestDTO request = new PedidoCheckoutRequestDTO(
                 3L,
-                Set.of(new PedidoCrearRequestDTO.DetalleRequestDTO(7L, 2, Set.of())));
-
-        pedidoService.crearPedido(request);
+                List.of(new PedidoCheckoutRequestDTO.DetalleRequestDTO(7L, 2, Set.of())));
+        pedidoService.crearPedidoParaUsuario("ana@example.test", request);
 
         assertEquals(new BigDecimal("42.49"), detallesGuardados.get(0).getPrecioUnitario());
         assertEquals(new BigDecimal("84.98"), detallesGuardados.get(0).getSubtotal());

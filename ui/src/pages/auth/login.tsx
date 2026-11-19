@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthShell, Field, SubmitButton } from "../../componets/auth/authcomponents";
 import { AUTH_USER_QUERY_KEY, iniciarSesion } from "../../services/auth";
 
@@ -9,11 +9,18 @@ export default function Login() {
   const [formError, setFormError] = useState("");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const login = useMutation({
     mutationFn: iniciarSesion,
     onSuccess: (response) => {
       queryClient.setQueryData(AUTH_USER_QUERY_KEY, response);
-      navigate(response.rolSistema === "ADMIN" ? "/administrador/dashboard" : "/inicio", { replace: true });
+      const returnTo = (location.state as { from?: unknown } | null)?.from;
+      navigate(
+        response.rolSistema === "ADMIN"
+          ? "/administrador/dashboard"
+          : returnTo === "/checkout" ? "/checkout" : "/inicio",
+        { replace: true },
+      );
     },
     onError: (error: Error) => setFormError(error.message),
   });

@@ -7,6 +7,28 @@ import CarritoFlotante from '../carrito_flotante/CarritoFlotante'
 import PageFade from './PageFade'
 import type { Producto } from '../../productos/ProductoCard'
 
+const CART_STORAGE_KEY = 'cremissimo-cart'
+
+function cargarCarrito(): Producto[] {
+  try {
+    const stored = window.localStorage.getItem(CART_STORAGE_KEY)
+    if (!stored) return []
+    const parsed: unknown = JSON.parse(stored)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((item): item is Producto => (
+      typeof item === 'object'
+      && item !== null
+      && 'id' in item && typeof item.id === 'number'
+      && 'nombre' in item && typeof item.nombre === 'string'
+      && 'sabor' in item && typeof item.sabor === 'string'
+      && 'precio' in item && typeof item.precio === 'number' && Number.isFinite(item.precio)
+      && 'imagen' in item && typeof item.imagen === 'string'
+    ))
+  } catch {
+    return []
+  }
+}
+
 export interface LayoutContext {
   carrito: Producto[]
   agregarAlCarrito: (producto: Producto) => void
@@ -21,7 +43,7 @@ export function useLayout() {
 }
 
 export default function Layout() {
-  const [carrito, setCarrito] = useState<Producto[]>([])
+  const [carrito, setCarrito] = useState<Producto[]>(cargarCarrito)
   const [carritoAbierto, setCarritoAbierto] = useState(false)
   const { pathname } = useLocation()
 
@@ -30,8 +52,22 @@ export default function Layout() {
     window.scrollTo(0, 0)
   }, [pathname])
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(carrito))
+    } catch {
+      // The cart remains usable for the current page if browser storage is unavailable.
+    }
+  }, [carrito])
+
   const agregarAlCarrito = (producto: Producto) => {
-    setCarrito((actual) => [...actual, producto])
+    setCarrito((actual) => {
+      if (producto.stockDisponible !== undefined) {
+        const cantidadActual = actual.filter((item) => sonIguales(item, producto)).length
+        if (cantidadActual >= producto.stockDisponible) return actual
+      }
+      return [...actual, producto]
+    })
     if (pathname !== '/carrito') setCarritoAbierto(true)
   }
 

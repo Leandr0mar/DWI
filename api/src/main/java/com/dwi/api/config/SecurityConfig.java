@@ -54,6 +54,9 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/catalogo/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/zonas", "/api/zonas/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/pedidos/checkout").hasRole("CLIENTE")
+                .requestMatchers("/api/v1/cliente/**").hasRole("CLIENTE")
                 .requestMatchers("/api/v1/catalogo/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // Privado: Solo Admins
                 .requestMatchers(

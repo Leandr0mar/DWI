@@ -77,6 +77,7 @@ export default function ProductosDetalle() {
       sabor: sabores,
       precio: precioFinal,
       imagen,
+      stockDisponible: producto.stockDisponible,
     }
 
     for (let unidad = 0; unidad < cantidad; unidad += 1) {

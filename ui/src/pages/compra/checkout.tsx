@@ -1,9 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
-  CreditCard,
   LockKeyhole,
   MapPin,
   Plus,
@@ -16,66 +14,39 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import { agruparProductos, calcularSubtotal } from '../../componets/common/carrito_flotante/cart-utils'
 import { useLayout } from '../../componets/common/layout/Layout'
+import { AuthApiError, obtenerUsuarioActual, type AuthUser } from '../../services/auth'
+import {
+  CheckoutApiError,
+  createCheckoutOrder,
+  createMyAddress,
+  deleteMyAddress,
+  getDeliveryZones,
+  getMyAddresses,
+  updateMyAddress,
+  type CheckoutAddress,
+  type CheckoutAddressPayload,
+  type CheckoutDeliveryZone,
+} from '../../services/checkout-api'
 import './checkout.css'
-
-interface DeliveryZone {
-  district: string
-  cost: number
-  eta: string
-}
-
-interface CheckoutAddress {
-  id: number
-  alias: string
-  district: string
-  line1: string
-  line2: string
-  reference: string
-  isPrimary: boolean
-}
-
-type PaymentBrand = 'Visa' | 'Mastercard'
-
-interface PaymentMethod {
-  id: number
-  brand: PaymentBrand
-  holder: string
-  lastFour: string
-}
 
 export interface PurchaseConfirmationData {
   orderNumber: string
+  total: number
+  estadoPago: string
 }
 
 interface AddressDraft {
   alias: string
-  district: string
+  zonaId: string
   line1: string
   line2: string
   reference: string
   isPrimary: boolean
 }
 
-const deliveryZones: DeliveryZone[] = [
-  { district: 'Miraflores', cost: 8, eta: '30–45 min' },
-  { district: 'San Isidro', cost: 8, eta: '30–45 min' },
-  { district: 'Barranco', cost: 10, eta: '40–55 min' },
-  { district: 'Surco', cost: 12, eta: '45–60 min' },
-]
-
-const initialAddresses: CheckoutAddress[] = [
-  { id: 1, alias: 'Casa', district: 'Miraflores', line1: 'Av. Larco 1234', line2: 'Dpto. 402', reference: 'Frente al parque', isPrimary: true },
-  { id: 2, alias: 'Oficina', district: 'San Isidro', line1: 'Calle Los Pinos 456', line2: 'Piso 5', reference: 'Edificio de fachada azul', isPrimary: false },
-]
-
-const initialPaymentMethods: PaymentMethod[] = [
-  { id: 1, brand: 'Visa', holder: 'María Ríos', lastFour: '0275' },
-  { id: 2, brand: 'Mastercard', holder: 'María Ríos', lastFour: '8842' },
-]
-
 const emptyAddressDraft: AddressDraft = {
   alias: '',
-  district: deliveryZones[0].district,
+  zonaId: '',
   line1: '',
   line2: '',
   reference: '',
@@ -86,32 +57,65 @@ function moneda(valor: number) {
   return `S/ ${valor.toFixed(2)}`
 }
 
-function generarNumeroPedidoDemo() {
-  return `CR-${Date.now().toString().slice(-8)}`
-}
-
 export default function CheckoutPage() {
   const { carrito, vaciarCarrito } = useLayout()
   const navigate = useNavigate()
   const lineas = agruparProductos(carrito)
   const subtotal = calcularSubtotal(carrito)
-  const [addresses, setAddresses] = useState(initialAddresses)
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(initialAddresses[0].id)
+  const [addresses, setAddresses] = useState<CheckoutAddress[]>([])
+  const [deliveryZones, setDeliveryZones] = useState<CheckoutDeliveryZone[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [editingAddressId, setEditingAddressId] = useState<number | null>(null)
   const [addressDraft, setAddressDraft] = useState<AddressDraft>(emptyAddressDraft)
-  const [paymentMethods, setPaymentMethods] = useState(initialPaymentMethods)
-  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(initialPaymentMethods[0].id)
-  const [paymentFormOpen, setPaymentFormOpen] = useState(false)
+  const [usuario, setUsuario] = useState<AuthUser | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [savingAddress, setSavingAddress] = useState(false)
+  const [savingOrder, setSavingOrder] = useState(false)
+  const [authRequired, setAuthRequired] = useState(false)
+  const [error, setError] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    setError('')
+    Promise.all([getMyAddresses(), getDeliveryZones(), obtenerUsuarioActual()])
+      .then(([addressRows, zoneRows, user]) => {
+        if (!active) return
+        setAddresses(addressRows)
+        setDeliveryZones(zoneRows)
+        setUsuario(user)
+        setSelectedAddressId(addressRows.find((address) => address.esPrincipal)?.id ?? addressRows[0]?.id ?? null)
+      })
+      .catch((cause: unknown) => {
+        if (!active) return
+        if ((cause instanceof CheckoutApiError || cause instanceof AuthApiError) && cause.status === 401) {
+          setAuthRequired(true)
+          setError('Inicia sesión con tu cuenta de cliente para continuar.')
+        } else if (cause instanceof CheckoutApiError && cause.status === 403) {
+          setAuthRequired(true)
+          setError('El checkout y la gestión de direcciones están disponibles para cuentas de cliente.')
+        } else {
+          setError(cause instanceof Error ? cause.message : 'No se pudieron cargar las opciones de entrega.')
+        }
+      })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [reloadKey])
 
   const selectedAddress = addresses.find((address) => address.id === selectedAddressId) ?? null
-  const selectedZone = deliveryZones.find((zone) => zone.district === selectedAddress?.district) ?? null
-  const selectedPaymentMethod = paymentMethods.find((method) => method.id === selectedPaymentId) ?? null
-  const estimatedTotal = subtotal + (selectedZone?.cost ?? 0)
+  const selectedZone = deliveryZones.find((zone) => zone.id === selectedAddress?.zonaId) ?? null
+  const igv = Math.round(subtotal * 0.18 * 100) / 100
+  const estimatedTotal = subtotal + igv + (selectedZone?.costoEnvio ?? 0)
 
   function openNewAddress() {
     setEditingAddressId(null)
-    setAddressDraft({ ...emptyAddressDraft, isPrimary: addresses.length === 0 })
+    setAddressDraft({
+      ...emptyAddressDraft,
+      zonaId: String(deliveryZones[0]?.id ?? ''),
+      isPrimary: addresses.length === 0,
+    })
     setAddressModalOpen(true)
   }
 
@@ -119,84 +123,99 @@ export default function CheckoutPage() {
     setEditingAddressId(address.id)
     setAddressDraft({
       alias: address.alias,
-      district: address.district,
-      line1: address.line1,
-      line2: address.line2,
-      reference: address.reference,
-      isPrimary: address.isPrimary,
+      zonaId: String(address.zonaId),
+      line1: address.linea1,
+      line2: address.linea2 ?? '',
+      reference: address.referencia ?? '',
+      isPrimary: address.esPrincipal,
     })
     setAddressModalOpen(true)
   }
 
-  function saveAddress(event: FormEvent<HTMLFormElement>) {
+  async function saveAddress(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const address: CheckoutAddress = {
-      id: editingAddressId ?? Date.now(),
-      alias: String(formData.get('alias')).trim(),
-      district: String(formData.get('district')),
-      line1: String(formData.get('line1')).trim(),
-      line2: String(formData.get('line2')).trim(),
-      reference: String(formData.get('reference')).trim(),
-      isPrimary: formData.get('isPrimary') === 'on',
+    setSavingAddress(true)
+    setError('')
+    const payload: CheckoutAddressPayload = {
+      zonaId: Number(addressDraft.zonaId),
+      alias: addressDraft.alias.trim(),
+      linea1: addressDraft.line1.trim(),
+      linea2: addressDraft.line2.trim(),
+      referencia: addressDraft.reference.trim(),
+      esPrincipal: addressDraft.isPrimary,
     }
-
-    let updatedAddresses = editingAddressId
-      ? addresses.map((current) => current.id === editingAddressId ? address : current)
-      : [...addresses, address]
-
-    if (address.isPrimary) {
-      updatedAddresses = updatedAddresses.map((current) => ({ ...current, isPrimary: current.id === address.id }))
-    } else if (!updatedAddresses.some((current) => current.isPrimary)) {
-      updatedAddresses = updatedAddresses.map((current, index) => ({ ...current, isPrimary: index === 0 }))
+    try {
+      const saved = editingAddressId
+        ? await updateMyAddress(editingAddressId, payload)
+        : await createMyAddress(payload)
+      setAddresses((current) => {
+        const updated = editingAddressId
+          ? current.map((address) => address.id === saved.id ? saved : address)
+          : [...current, saved]
+        return saved.esPrincipal ? updated.map((address) => ({ ...address, esPrincipal: address.id === saved.id })) : updated
+      })
+      setSelectedAddressId(saved.id)
+      setAddressModalOpen(false)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo guardar la dirección.')
+    } finally {
+      setSavingAddress(false)
     }
-
-    setAddresses(updatedAddresses)
-    setSelectedAddressId(address.id)
-    setAddressModalOpen(false)
   }
 
-  function deleteAddress(id: number) {
-    const deletedPrimary = addresses.find((address) => address.id === id)?.isPrimary ?? false
-    let updatedAddresses = addresses.filter((address) => address.id !== id)
-
-    if (deletedPrimary && updatedAddresses.length > 0) {
-      updatedAddresses = updatedAddresses.map((address, index) => ({ ...address, isPrimary: index === 0 }))
+  async function deleteAddress(id: number) {
+    if (!window.confirm('¿Deseas eliminar esta dirección de tu cuenta?')) return
+    setError('')
+    try {
+      await deleteMyAddress(id)
+      const updated = addresses.filter((address) => address.id !== id)
+      setAddresses(updated)
+      if (selectedAddressId === id) setSelectedAddressId(updated.find((address) => address.esPrincipal)?.id ?? updated[0]?.id ?? null)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo eliminar la dirección.')
     }
-
-    setAddresses(updatedAddresses)
-    if (selectedAddressId === id) setSelectedAddressId(updatedAddresses[0]?.id ?? null)
   }
 
-  function selectPrimaryAddress(id: number) {
-    setAddresses((current) => current.map((address) => ({ ...address, isPrimary: address.id === id })))
-    setSelectedAddressId(id)
+  async function selectPrimaryAddress(address: CheckoutAddress) {
+    setError('')
+    try {
+      const saved = await updateMyAddress(address.id, {
+        zonaId: address.zonaId,
+        alias: address.alias,
+        linea1: address.linea1,
+        linea2: address.linea2 ?? '',
+        referencia: address.referencia ?? '',
+        esPrincipal: true,
+      })
+      setAddresses((current) => current.map((item) => ({ ...item, esPrincipal: item.id === saved.id })))
+      setSelectedAddressId(saved.id)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo actualizar la dirección principal.')
+    }
   }
 
-  function savePaymentMethod(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const method: PaymentMethod = {
-      id: Date.now(),
-      brand: formData.get('brand') === 'Mastercard' ? 'Mastercard' : 'Visa',
-      holder: String(formData.get('holder')).trim(),
-      lastFour: String(formData.get('lastFour')).trim(),
+  async function confirmarCompra() {
+    if (!selectedAddress || !carrito.length || savingOrder) return
+    setSavingOrder(true)
+    setError('')
+    try {
+      const pedido = await createCheckoutOrder({
+        direccionId: selectedAddress.id,
+        detalles: lineas.map(({ producto, cantidad }) => ({ productoId: producto.id, cantidad })),
+      })
+      const confirmation: PurchaseConfirmationData = {
+        orderNumber: pedido.id ? String(pedido.id) : pedido.uuid,
+        total: Number(pedido.total),
+        estadoPago: pedido.estadoPago,
+      }
+      vaciarCarrito()
+      navigate('/compra/confirmacion', { state: confirmation, replace: true })
+    } catch (cause) {
+      if (cause instanceof CheckoutApiError && cause.status === 401) setAuthRequired(true)
+      setError(cause instanceof Error ? cause.message : 'No se pudo guardar el pedido.')
+    } finally {
+      setSavingOrder(false)
     }
-    setPaymentMethods((current) => [...current, method])
-    setSelectedPaymentId(method.id)
-    setPaymentFormOpen(false)
-    event.currentTarget.reset()
-  }
-
-  function confirmarCompra() {
-    if (!selectedAddress || !selectedZone || !selectedPaymentMethod) return
-
-    const confirmation: PurchaseConfirmationData = {
-      orderNumber: generarNumeroPedidoDemo(),
-    }
-
-    vaciarCarrito()
-    navigate('/compra/confirmacion', { state: confirmation, replace: true })
   }
 
   if (carrito.length === 0) {
@@ -224,6 +243,12 @@ export default function CheckoutPage() {
         <nav className="checkout-breadcrumb" aria-label="Ruta de navegación">
           <Link to="/inicio">Inicio</Link><span>/</span><Link to="/carrito">Carrito</Link><span>/</span><span>Compra</span>
         </nav>
+        {error && <div className="checkout-request-error" role="alert">
+          <p>{error}</p>
+          {authRequired
+            ? <Link to="/login" state={{ from: '/checkout' }}>Iniciar sesión</Link>
+            : <button type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
+        </div>}
 
         <header className="checkout-heading">
           <div>
@@ -243,18 +268,18 @@ export default function CheckoutPage() {
                   <h2 id="checkout-address-title">Dirección de entrega</h2>
                   <p>Elige dónde quieres recibir tu pedido.</p>
                 </div>
-                <button className="checkout-add-button" type="button" onClick={openNewAddress}><Plus size={16} /> Agregar dirección</button>
+                <button className="checkout-add-button" type="button" onClick={openNewAddress} disabled={loading || authRequired || deliveryZones.length === 0}><Plus size={16} /> Agregar dirección</button>
               </div>
 
-              {addresses.length === 0 ? (
+              {loading ? <p className="checkout-no-address">Cargando tus direcciones y zonas de reparto…</p> : addresses.length === 0 ? (
                 <div className="checkout-no-address">
                   <p>Aún no tienes direcciones guardadas.</p>
-                  <button type="button" onClick={openNewAddress}>Agregar una dirección</button>
+                  {!authRequired && <button type="button" onClick={openNewAddress} disabled={deliveryZones.length === 0}>Agregar una dirección</button>}
                 </div>
               ) : (
                 <div className="checkout-address-list">
                   {addresses.map((address) => {
-                    const zone = deliveryZones.find((item) => item.district === address.district)
+                    const zone = deliveryZones.find((item) => item.id === address.zonaId)
                     return (
                       <article className={`checkout-address-option${selectedAddressId === address.id ? ' is-selected' : ''}`} key={address.id}>
                         <label className="checkout-address-choice">
@@ -269,20 +294,20 @@ export default function CheckoutPage() {
                           <span className="checkout-address-content">
                             <span className="checkout-address-line">
                               <strong>{address.alias}</strong>
-                              {address.isPrimary && <span className="checkout-primary-badge">Principal</span>}
-                              <span className="checkout-address-recipient">María Ríos · +51 900 000 123</span>
+                              {address.esPrincipal && <span className="checkout-primary-badge">Principal</span>}
+                              <span className="checkout-address-recipient">{usuario?.nombreCompleto}</span>
                             </span>
-                            <span>{address.line1}{address.line2 ? `, ${address.line2}` : ''}</span>
-                            <span>{address.district}, Lima, Perú{address.reference ? ` · Ref: ${address.reference}` : ''}</span>
-                            {zone && <small><Truck size={13} /> {zone.eta} · Envío {moneda(zone.cost)}</small>}
+                            <span>{address.linea1}{address.linea2 ? `, ${address.linea2}` : ''}</span>
+                            <span>{address.zona}, Lima, Perú{address.referencia ? ` · Ref: ${address.referencia}` : ''}</span>
+                            {zone && <small><Truck size={13} /> {zone.tiempoEstimadoMinutos ? `${zone.tiempoEstimadoMinutos} min` : 'Tiempo por coordinar'} · Envío {moneda(Number(zone.costoEnvio))}</small>}
                           </span>
                         </label>
                         <div className="checkout-address-actions">
-                          {!address.isPrimary && (
-                            <button type="button" onClick={() => selectPrimaryAddress(address.id)}>Hacer principal</button>
+                          {!address.esPrincipal && (
+                            <button type="button" onClick={() => void selectPrimaryAddress(address)}>Hacer principal</button>
                           )}
                           <button type="button" onClick={() => openEditAddress(address)}>Editar</button>
-                          <button className="is-danger" type="button" onClick={() => deleteAddress(address.id)}>Eliminar</button>
+                          <button className="is-danger" type="button" onClick={() => void deleteAddress(address.id)}>Eliminar</button>
                         </div>
                       </article>
                     )
@@ -293,63 +318,13 @@ export default function CheckoutPage() {
 
             <section className="checkout-panel checkout-payment-panel" aria-labelledby="checkout-payment-title">
               <div className="checkout-panel-header">
-                <div className="checkout-section-icon checkout-section-icon--blue"><CreditCard size={19} /></div>
+                <div className="checkout-section-icon checkout-section-icon--blue"><ShieldCheck size={19} /></div>
                 <div className="checkout-panel-title">
-                  <h2 id="checkout-payment-title">Método de pago</h2>
-                  <p>Selecciona un método guardado o agrega uno de prueba.</p>
+                  <h2 id="checkout-payment-title">Pago</h2>
+                  <p>En esta versión no se procesan pagos en línea.</p>
                 </div>
-                <button className="checkout-add-button" type="button" onClick={() => setPaymentFormOpen((open) => !open)}>
-                  <Plus size={16} /> Agregar método
-                </button>
               </div>
-
-              <div className="checkout-payment-list">
-                {paymentMethods.map((method) => (
-                  <label className={`checkout-payment-option${selectedPaymentId === method.id ? ' is-selected' : ''}`} key={method.id}>
-                    <input
-                      type="radio"
-                      name="payment-method"
-                      value={method.id}
-                      checked={selectedPaymentId === method.id}
-                      onChange={() => setSelectedPaymentId(method.id)}
-                    />
-                    <span className="checkout-radio-mark" />
-                    <span className={`checkout-card-mark checkout-card-mark--${method.brand.toLowerCase()}`}>{method.brand === 'Visa' ? 'VISA' : 'MC'}</span>
-                    <span className="checkout-payment-details">
-                      <strong>{method.brand} ···· {method.lastFour}</strong>
-                      <small>{method.holder}</small>
-                    </span>
-                    {selectedPaymentId === method.id && <Check className="checkout-payment-check" size={17} />}
-                  </label>
-                ))}
-              </div>
-
-              {paymentMethods.length === 0 && <p className="checkout-no-address">Agrega un método de pago de demostración para continuar.</p>}
-
-              {paymentFormOpen && (
-                <form className="checkout-payment-form" onSubmit={savePaymentMethod}>
-                  <div className="checkout-form-heading">
-                    <div><strong>Agregar método de demostración</strong><small>No ingreses número completo de tarjeta ni CVV.</small></div>
-                    <button type="button" aria-label="Cerrar formulario de método de pago" onClick={() => setPaymentFormOpen(false)}><X size={17} /></button>
-                  </div>
-                  <div className="checkout-form-grid checkout-payment-fields">
-                    <label>Tipo de tarjeta
-                      <select name="brand" defaultValue="Visa">
-                        <option value="Visa">Visa</option>
-                        <option value="Mastercard">Mastercard</option>
-                      </select>
-                    </label>
-                    <label>Nombre del titular
-                      <input name="holder" autoComplete="cc-name" placeholder="Ej. María Ríos" required />
-                    </label>
-                    <label>Últimos 4 dígitos
-                      <input name="lastFour" inputMode="numeric" autoComplete="off" maxLength={4} pattern="[0-9]{4}" placeholder="0000" required />
-                    </label>
-                  </div>
-                  <button className="checkout-form-submit" type="submit">Guardar método de prueba</button>
-                </form>
-              )}
-              <p className="checkout-demo-note">Los métodos mostrados son de demostración; no se almacenan datos bancarios reales.</p>
+              <p className="checkout-demo-note">Al confirmar se guardará el pedido en tu cuenta con pago pendiente. No se solicitarán datos bancarios ni se realizará ningún cobro.</p>
             </section>
 
             <section className="checkout-panel checkout-products-panel" aria-labelledby="checkout-products-title">
@@ -390,29 +365,28 @@ export default function CheckoutPage() {
               </div>
               <div className="checkout-summary-row">
                 <span>Gastos de envío</span>
-                <strong>{selectedZone ? moneda(selectedZone.cost) : 'Selecciona dirección'}</strong>
+                <strong>{selectedZone ? moneda(Number(selectedZone.costoEnvio)) : 'Selecciona dirección'}</strong>
               </div>
-              <div className="checkout-summary-row"><span>Impuestos</span><span className="checkout-summary-pending">Se confirmarán al pagar</span></div>
+              <div className="checkout-summary-row"><span>IGV (18%)</span><strong>{moneda(igv)}</strong></div>
               <div className="checkout-summary-total">
-                <span>Total estimado</span>
+                <span>Total</span>
                 <strong>{moneda(estimatedTotal)}</strong>
               </div>
-              <p className="checkout-summary-disclaimer">Estimación de muestra. El cálculo final de impuestos y pago aún no está conectado.</p>
+              <p className="checkout-summary-disclaimer">El total definitivo se calcula y verifica nuevamente al guardar el pedido.</p>
               <button
                 type="button"
                 className="checkout-place-order"
-                disabled={!selectedAddress || !selectedZone || !selectedPaymentMethod}
-                onClick={confirmarCompra}
-                title="Flujo de demostración; no se realizará ningún cobro"
+                disabled={!selectedAddress || !selectedZone || loading || savingOrder || authRequired}
+                onClick={() => void confirmarCompra()}
               >
-                Confirmar compra (demo) <ArrowRight size={17} />
+                {savingOrder ? 'Guardando pedido…' : 'Confirmar pedido'} <ArrowRight size={17} />
               </button>
-              <p className="checkout-terms">Al continuar, aceptas los términos y condiciones de Cremissimo.</p>
+              <p className="checkout-terms">El pedido se guardará con pago pendiente. No se realizará ningún cobro en línea.</p>
             </section>
 
             <section className="checkout-panel checkout-trust-panel">
-              <div><ShieldCheck size={19} /><strong>Compra segura</strong></div>
-              <p>Tu información se manejará de forma segura cuando se conecte la pasarela de pago.</p>
+              <div><ShieldCheck size={19} /><strong>Pedido guardado en tu cuenta</strong></div>
+              <p>El precio, el stock, los impuestos y el costo de envío son verificados por el servidor.</p>
               <div className="checkout-trust-divider" />
               <div><Truck size={19} /><strong>Entrega refrigerada</strong></div>
               <p>La fecha y el costo de entrega se confirmarán según tu zona.</p>
@@ -422,7 +396,7 @@ export default function CheckoutPage() {
           </aside>
         </div>
 
-        <div className="checkout-footer-note"><LockKeyhole size={14} /> Esta vista es una demostración; no se realiza ningún cobro.</div>
+        <div className="checkout-footer-note"><LockKeyhole size={14} /> No se solicitan datos de tarjeta ni se procesa un pago en esta versión.</div>
       </div>
 
       {addressModalOpen && (
@@ -447,8 +421,8 @@ export default function CheckoutPage() {
                   <input name="alias" value={addressDraft.alias} onChange={(event) => setAddressDraft((current) => ({ ...current, alias: event.target.value }))} placeholder="Casa, oficina..." required maxLength={50} />
                 </label>
                 <label>Distrito
-                  <select name="district" value={addressDraft.district} onChange={(event) => setAddressDraft((current) => ({ ...current, district: event.target.value }))}>
-                    {deliveryZones.map((zone) => <option value={zone.district} key={zone.district}>{zone.district} · Envío {moneda(zone.cost)}</option>)}
+                  <select name="zonaId" value={addressDraft.zonaId} onChange={(event) => setAddressDraft((current) => ({ ...current, zonaId: event.target.value }))} required>
+                    {deliveryZones.map((zone) => <option value={zone.id} key={zone.id}>{zone.nombreDistrito} · Envío {moneda(Number(zone.costoEnvio))}</option>)}
                   </select>
                 </label>
                 <label className="checkout-form-full">Dirección
@@ -466,8 +440,8 @@ export default function CheckoutPage() {
                 Usar como dirección principal
               </label>
               <div className="checkout-modal-actions">
-                <button type="button" className="checkout-cancel-button" onClick={() => setAddressModalOpen(false)}>Cancelar</button>
-                <button type="submit" className="checkout-form-submit">{editingAddressId ? 'Guardar cambios' : 'Guardar dirección'}</button>
+                <button type="button" className="checkout-cancel-button" onClick={() => setAddressModalOpen(false)} disabled={savingAddress}>Cancelar</button>
+                <button type="submit" className="checkout-form-submit" disabled={savingAddress}>{savingAddress ? 'Guardando…' : editingAddressId ? 'Guardar cambios' : 'Guardar dirección'}</button>
               </div>
             </form>
           </section>

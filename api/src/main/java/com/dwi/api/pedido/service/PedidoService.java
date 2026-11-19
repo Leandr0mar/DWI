@@ -16,6 +16,7 @@ import com.dwi.api.oferta.model.Oferta;
 import com.dwi.api.oferta.service.OfertaService;
 import com.dwi.api.pedido.dto.PedidoAdminDTO;
 import com.dwi.api.pedido.dto.PedidoCrearRequestDTO;
+import com.dwi.api.pedido.dto.PedidoCheckoutRequestDTO;
 import com.dwi.api.pedido.dto.PedidoDetalleAdminDTO;
 import com.dwi.api.pedido.model.DetallePedido;
 import com.dwi.api.pedido.model.HistorialEstadoPedido;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Map;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,12 +74,32 @@ public class PedidoService {
     }
 
     public PedidoAdminDTO crearPedido(PedidoCrearRequestDTO request) {
-        Cliente cliente = clienteRepository.findById(request.clienteId())
+        return crearPedido(request.clienteId(), request.direccionId(), request.detalles());
+    }
+
+    public PedidoAdminDTO crearPedidoParaUsuario(String email, PedidoCheckoutRequestDTO request) {
+        Cliente cliente = clienteRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado."));
-        Direccion direccion = direccionRepository.findById(request.direccionId())
+        List<PedidoCrearRequestDTO.DetalleRequestDTO> detalles = request.detalles().stream()
+                .map(detalle -> new PedidoCrearRequestDTO.DetalleRequestDTO(
+                        detalle.productoId(), detalle.cantidad(), detalle.saboresIds()))
+                .toList();
+        return crearPedido(cliente.getId(), request.direccionId(), detalles);
+    }
+
+    private PedidoAdminDTO crearPedido(
+            Long clienteId,
+            Long direccionId,
+            Collection<PedidoCrearRequestDTO.DetalleRequestDTO> requestDetalles) {
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado."));
+        Direccion direccion = direccionRepository.findById(direccionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada."));
         if (!direccion.getCliente().getId().equals(cliente.getId())) {
             throw new IllegalArgumentException("La dirección no pertenece al cliente indicado.");
+        }
+        if (!direccion.getZona().isEstado()) {
+            throw new IllegalArgumentException("La zona de reparto no está disponible.");
         }
 
         Pedido pedido = new Pedido();
@@ -88,10 +110,10 @@ public class PedidoService {
         BigDecimal subtotal = BigDecimal.ZERO;
         List<DetallePedido> detalles = new java.util.ArrayList<>();
         Map<Long, List<OfertaProductoProjection>> ofertasVigentes = ofertaService.listarVigentes(
-                        request.detalles().stream().map(PedidoCrearRequestDTO.DetalleRequestDTO::productoId).toList())
+                        requestDetalles.stream().map(PedidoCrearRequestDTO.DetalleRequestDTO::productoId).toList())
                 .stream()
                 .collect(Collectors.groupingBy(OfertaProductoProjection::productoId));
-        for (PedidoCrearRequestDTO.DetalleRequestDTO requestDetalle : request.detalles()) {
+        for (PedidoCrearRequestDTO.DetalleRequestDTO requestDetalle : requestDetalles) {
             Producto producto = productoRepository.findById(requestDetalle.productoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado."));
             if (producto.getStockDisponible() < requestDetalle.cantidad()) {

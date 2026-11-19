@@ -6,7 +6,10 @@ import './checkout.css'
 function isPurchaseConfirmation(value: unknown): value is PurchaseConfirmationData {
   if (typeof value !== 'object' || value === null) return false
 
-  return typeof (value as Partial<PurchaseConfirmationData>).orderNumber === 'string'
+  const confirmation = value as Partial<PurchaseConfirmationData>
+  return typeof confirmation.orderNumber === 'string'
+    && typeof confirmation.total === 'number'
+    && typeof confirmation.estadoPago === 'string'
 }
 
 export default function CompraConfirmadaPage() {
@@ -23,17 +26,19 @@ export default function CompraConfirmadaPage() {
         {confirmation ? (
           <section className="checkout-panel checkout-confirmation-panel">
             <div className="checkout-confirmation-icon"><CheckCircle2 size={32} /></div>
-            <span className="checkout-eyebrow">PEDIDO DE DEMOSTRACIÓN</span>
-            <h1>¡Compra confirmada!</h1>
+            <span className="checkout-eyebrow">PEDIDO REGISTRADO</span>
+            <h1>¡Gracias por tu pedido!</h1>
             <p className="checkout-confirmation-message">
-              Tu pedido de prueba quedó registrado. Esta vista no procesa pagos ni crea un pedido real.
+              Guardamos tu pedido en la base de datos. El pago quedó pendiente; no se realizó ningún cobro.
             </p>
             <div className="checkout-confirmation-reference">
-              Número de pedido <strong>{confirmation.orderNumber}</strong>
+              <span>Número de pedido</span> <strong>#{confirmation.orderNumber}</strong>
             </div>
-
+            <div className="checkout-confirmation-reference">
+              <span>Total registrado</span> <strong>S/ {confirmation.total.toFixed(2)}</strong>
+            </div>
             <div className="checkout-confirmation-note">
-              <strong>Solo demostración:</strong> no se realizó ningún cobro y el pedido no fue enviado a la tienda.
+              <strong>Pago pendiente.</strong> El pedido está registrado y será coordinado por el equipo de Cremissimo.
             </div>
             <Link className="checkout-primary-link" to="/productos">Seguir comprando <ShoppingBag size={16} /></Link>
           </section>

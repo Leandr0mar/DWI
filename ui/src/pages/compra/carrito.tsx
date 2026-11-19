@@ -84,6 +84,7 @@ export default function CarritoPage() {
                           type="button"
                           aria-label={`Aumentar cantidad de ${producto.nombre}`}
                           onClick={() => agregarAlCarrito(producto)}
+                          disabled={producto.stockDisponible !== undefined && cantidad >= producto.stockDisponible}
                         >
                           +
                         </button>

@@ -2,6 +2,7 @@ package com.dwi.api.pedido.controller;
 
 import com.dwi.api.pedido.dto.PedidoAdminDTO;
 import com.dwi.api.pedido.dto.PedidoCrearRequestDTO;
+import com.dwi.api.pedido.dto.PedidoCheckoutRequestDTO;
 import com.dwi.api.pedido.model.HistorialEstadoPedido;
 import com.dwi.api.pedido.model.Pedido;
 import com.dwi.api.pedido.service.PedidoService;
@@ -9,6 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +39,14 @@ public class PedidoController {
     @PostMapping
     public ResponseEntity<PedidoAdminDTO> crear(@Valid @RequestBody PedidoCrearRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.crearPedido(request));
+    }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<PedidoAdminDTO> crearPedidoDeCliente(
+            @AuthenticationPrincipal UserDetails usuario,
+            @Valid @RequestBody PedidoCheckoutRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(pedidoService.crearPedidoParaUsuario(usuario.getUsername(), request));
     }
     
     /**

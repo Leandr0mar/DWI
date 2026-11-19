@@ -7,6 +7,7 @@ export interface Producto {
   sabor: string
   precio: number
   imagen: string
+  stockDisponible?: number
 }
 
 export interface ProductoCatalogo extends Producto {

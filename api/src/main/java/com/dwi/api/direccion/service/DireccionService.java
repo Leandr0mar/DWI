@@ -95,6 +95,65 @@ public class DireccionService {
     public List<DireccionAdminDTO> obtenerParaCliente(Long clienteId) {
         return obtenerDireccionesDeCliente(clienteId).stream().map(this::toAdminDto).toList();
     }
+
+    public List<DireccionAdminDTO> obtenerDireccionesDelUsuario(String email) {
+        return obtenerDireccionesDeCliente(obtenerClientePorEmail(email).getId()).stream()
+                .map(this::toAdminDto)
+                .toList();
+    }
+
+    public DireccionAdminDTO crearParaUsuario(String email, DireccionAdminRequestDTO request) {
+        Cliente cliente = obtenerClientePorEmail(email);
+        Direccion direccion = new Direccion();
+        direccion.setZona(obtenerZonaActiva(request.zonaId()));
+        direccion.setAlias(request.alias().trim());
+        direccion.setLinea1(request.linea1().trim());
+        direccion.setLinea2(request.linea2());
+        direccion.setReferencia(request.referencia());
+        direccion.setEsPrincipal(request.esPrincipal() || !direccionRepository.existsByCliente(cliente));
+        if (direccion.isEsPrincipal()) {
+            desmarcarOtrasDireccionesPrincipales(cliente, null);
+        }
+        direccion.setCliente(cliente);
+        return toAdminDto(direccionRepository.save(direccion));
+    }
+
+    public DireccionAdminDTO actualizarParaUsuario(
+            String email,
+            Long id,
+            DireccionAdminRequestDTO request) {
+        Cliente cliente = obtenerClientePorEmail(email);
+        Direccion direccion = direccionRepository.findById(id)
+                .filter(actual -> actual.getCliente().getId().equals(cliente.getId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada."));
+        direccion.setZona(obtenerZonaActiva(request.zonaId()));
+        direccion.setAlias(request.alias().trim());
+        direccion.setLinea1(request.linea1().trim());
+        direccion.setLinea2(request.linea2());
+        direccion.setReferencia(request.referencia());
+        direccion.setEsPrincipal(request.esPrincipal());
+        if (direccion.isEsPrincipal()) {
+            desmarcarOtrasDireccionesPrincipales(cliente, direccion.getId());
+        }
+        return toAdminDto(direccionRepository.save(direccion));
+    }
+
+    public void eliminarParaUsuario(String email, Long id) {
+        Cliente cliente = obtenerClientePorEmail(email);
+        Direccion direccion = direccionRepository.findById(id)
+                .filter(actual -> actual.getCliente().getId().equals(cliente.getId()))
+                .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada."));
+        boolean eraPrincipal = direccion.isEsPrincipal();
+        direccionRepository.delete(direccion);
+        if (eraPrincipal) {
+            direccionRepository.findByCliente(cliente).stream()
+                    .findFirst()
+                    .ifPresent(siguiente -> {
+                        siguiente.setEsPrincipal(true);
+                        direccionRepository.save(siguiente);
+                    });
+        }
+    }
     
     /**
      * Actualiza una dirección existente por su ID
@@ -182,9 +241,22 @@ public class DireccionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + clienteId));
     }
 
+    private Cliente obtenerClientePorEmail(String email) {
+        return clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado."));
+    }
+
     private ZonaReparto obtenerZona(Long zonaId) {
         return zonaRepartoRepository.findById(zonaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Zona no encontrada: " + zonaId));
+    }
+
+    private ZonaReparto obtenerZonaActiva(Long zonaId) {
+        ZonaReparto zona = obtenerZona(zonaId);
+        if (!zona.isEstado()) {
+            throw new IllegalArgumentException("La zona de reparto no está disponible.");
+        }
+        return zona;
     }
 
     private void desmarcarOtrasDireccionesPrincipales(Cliente cliente, Long direccionExcluidaId) {
