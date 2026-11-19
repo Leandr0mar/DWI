@@ -157,6 +157,11 @@
   font-size: 0.67rem;
 }
 
+.producto-precio-igv {
+  color: #765d4d;
+  font-size: 0.62rem;
+}
+
 .producto-disponibilidad {
   color: #287443;
   font-size: 0.65rem;

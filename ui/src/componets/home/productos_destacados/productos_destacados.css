@@ -142,6 +142,17 @@
   text-align: left;
 }
 
+.producto-precio-destacado {
+  display: flex;
+  flex-direction: column;
+}
+
+.producto-footer .producto-precio-destacado small {
+  padding-left: 3px;
+  color: #765d4d;
+  font-size: 0.65rem;
+}
+
 .producto-footer button {
   flex-shrink: 0;
   border: 0;

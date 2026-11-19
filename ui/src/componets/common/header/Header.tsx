@@ -82,6 +82,7 @@ export default function Header() {
           <Link to="/nosotros" className="header-nav-link">Nosotros</Link>
           <Link to="/productos" className="header-nav-link">Productos</Link>
           <Link to="/contactos" className="header-nav-link">Contactos</Link>
+          {usuario?.rolSistema === 'ADMIN' && <Link to="/administrador/dashboard" className="header-nav-link">Dashboard</Link>}
         </nav>
 
         <div className="header-actions">
@@ -127,6 +128,7 @@ export default function Header() {
           <Link to="/nosotros" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Nosotros</Link>
           <Link to="/productos" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Productos</Link>
           <Link to="/contactos" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Contactos</Link>
+          {usuario?.rolSistema === 'ADMIN' && <Link to="/administrador/dashboard" className="header-mobile-link" onClick={() => setMenuAbierto(false)}>Dashboard</Link>}
 
           <div className="header-mobile-auth">
             {usuarioQuery.isPending ? null : usuario ? (

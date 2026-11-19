@@ -86,7 +86,7 @@ class PedidoServiceTest {
     }
 
     @Test
-    void aplicaElPrecioDeLaOfertaVigenteAlCrearUnPedido() {
+    void aplicaLaOfertaYMantieneElPrecioFinalConIgvIncluido() {
         Cliente cliente = new Cliente();
         cliente.setId(2L);
         cliente.setNombres("Ana");
@@ -117,6 +117,7 @@ class PedidoServiceTest {
                 LocalDate.parse("2026-07-01"), LocalDate.parse("2026-07-10"))));
 
         List<DetallePedido> detallesGuardados = new ArrayList<>();
+        List<Pedido> pedidosGuardados = new ArrayList<>();
         doAnswer(invocation -> {
             List<DetallePedido> detalles = invocation.getArgument(0);
             detallesGuardados.addAll(detalles);
@@ -126,6 +127,7 @@ class PedidoServiceTest {
         when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocation -> {
             Pedido pedido = invocation.getArgument(0);
             pedido.setId(10L);
+            pedidosGuardados.add(pedido);
             return pedido;
         });
 
@@ -136,5 +138,7 @@ class PedidoServiceTest {
 
         assertEquals(new BigDecimal("42.49"), detallesGuardados.get(0).getPrecioUnitario());
         assertEquals(new BigDecimal("84.98"), detallesGuardados.get(0).getSubtotal());
+        assertEquals(new BigDecimal("12.96"), pedidosGuardados.get(0).getIgv());
+        assertEquals(new BigDecimal("89.98"), pedidosGuardados.get(0).getTotal());
     }
 }

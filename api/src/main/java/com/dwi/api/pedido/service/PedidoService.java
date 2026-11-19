@@ -156,10 +156,11 @@ public class PedidoService {
             productoRepository.save(producto);
         }
 
-        BigDecimal igv = subtotal.multiply(IGV_RATE).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal igv = subtotal.multiply(IGV_RATE)
+                .divide(BigDecimal.ONE.add(IGV_RATE), 2, RoundingMode.HALF_UP);
         pedido.setSubtotal(subtotal.setScale(2, RoundingMode.HALF_UP));
         pedido.setIgv(igv);
-        pedido.setTotal(pedido.getSubtotal().add(pedido.getCostoEnvio()).add(igv));
+        pedido.setTotal(pedido.getSubtotal().add(pedido.getCostoEnvio()));
         Pedido saved = pedidoRepository.save(pedido);
         detalles.forEach(detalle -> detalle.setPedido(saved));
         detallePedidoRepository.saveAll(detalles);

@@ -111,14 +111,14 @@ export default function CarritoPage() {
             <h2 id="cart-summary-title">Resumen de compra</h2>
             <p className="cart-summary-caption">Un último vistazo a tu selección.</p>
             <div className="cart-summary-lines">
-              <div><span>Productos ({cantidadUnidades})</span><strong>S/ {subtotal.toFixed(2)}</strong></div>
+              <div><span>Productos ({cantidadUnidades}, IGV incluido)</span><strong>S/ {subtotal.toFixed(2)}</strong></div>
               <div><span>Envío</span><span className="cart-summary-pending">Se calcula después</span></div>
             </div>
             <div className="cart-summary-total">
-              <span>Subtotal</span>
+              <span>Productos (IGV incluido)</span>
               <strong>S/ {subtotal.toFixed(2)}</strong>
             </div>
-            <p className="cart-summary-note">El costo de envío y el total final se confirmarán en el siguiente paso.</p>
+            <p className="cart-summary-note">Los precios incluyen IGV. El costo de envío y el total final se confirmarán en el siguiente paso.</p>
             <Link className="cart-checkout-button" to="/checkout">
               Continuar al pago <ArrowRight size={17} />
             </Link>

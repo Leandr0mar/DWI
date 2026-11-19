@@ -1,0 +1,6 @@
+com\dwi\api\ApiApplicationTests.class
+com\dwi\api\pedido\service\PedidoServiceTest.class
+com\dwi\api\catalogo\producto\historial\HistorialStockServiceTest.class
+com\dwi\api\direccion\service\DireccionServiceTest.class
+com\dwi\api\oferta\service\OfertaServiceTest.class
+com\dwi\api\common\exception\GlobalExceptionHandlerTest.class

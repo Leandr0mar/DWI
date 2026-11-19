@@ -2,7 +2,6 @@ package com.dwi.api.zona.service;
 
 import com.dwi.api.zona.model.ZonaReparto;
 import com.dwi.api.zona.repository.ZonaRepartoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,6 @@ public class ZonaRepartoService {
     
     private final ZonaRepartoRepository zonaRepartoRepository;
     
-    @Autowired
     public ZonaRepartoService(ZonaRepartoRepository zonaRepartoRepository) {
         this.zonaRepartoRepository = zonaRepartoRepository;
     }

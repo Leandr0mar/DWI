@@ -138,7 +138,7 @@ export default function ProductosDetalle() {
             <div className="detalle-precio-box">
               {producto.porcentajeDescuento != null && <span className="precio-original">S/ {producto.precioBase.toFixed(2)}</span>}
               <span className="precio-actual">S/ {precioFinal.toFixed(2)}</span>
-              <span className="iva-tag">{producto.porcentajeDescuento != null ? `${producto.nombreOferta || 'Oferta'} · ${producto.porcentajeDescuento}% de descuento` : 'Precio base'}</span>
+              <span className="iva-tag">{producto.porcentajeDescuento != null ? `${producto.nombreOferta || 'Oferta'} · ${producto.porcentajeDescuento}% de descuento · IGV incluido` : 'IGV incluido'}</span>
               {producto.pesoVolumen && <span className="litro-tag">{producto.pesoVolumen}</span>}
             </div>
 

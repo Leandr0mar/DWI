@@ -2,7 +2,6 @@ package com.dwi.api.zona.controller;
 
 import com.dwi.api.zona.model.ZonaReparto;
 import com.dwi.api.zona.service.ZonaRepartoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +13,6 @@ public class ZonaRepartoController {
     
     private final ZonaRepartoService zonaRepartoService;
     
-    @Autowired
     public ZonaRepartoController(ZonaRepartoService zonaRepartoService) {
         this.zonaRepartoService = zonaRepartoService;
     }

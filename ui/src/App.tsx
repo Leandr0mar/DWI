@@ -25,7 +25,7 @@ function AdminOnlyRoute({ children }: { children: React.ReactNode }) {
 		refetchOnMount: 'always',
 	})
 
-	if (usuarioQuery.isPending || usuarioQuery.isFetching) {
+	if (usuarioQuery.isPending) {
 		return <main className="dashboard-auth-loading" role="status">Verificando acceso…</main>
 	}
 

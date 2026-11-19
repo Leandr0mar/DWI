@@ -106,8 +106,8 @@ export default function CheckoutPage() {
 
   const selectedAddress = addresses.find((address) => address.id === selectedAddressId) ?? null
   const selectedZone = deliveryZones.find((zone) => zone.id === selectedAddress?.zonaId) ?? null
-  const igv = Math.round(subtotal * 0.18 * 100) / 100
-  const estimatedTotal = subtotal + igv + (selectedZone?.costoEnvio ?? 0)
+  const igv = Math.round((subtotal * 18 / 118) * 100) / 100
+  const estimatedTotal = subtotal + (selectedZone?.costoEnvio ?? 0)
 
   function openNewAddress() {
     setEditingAddressId(null)
@@ -358,7 +358,7 @@ export default function CheckoutPage() {
                 <h2 id="checkout-summary-title">Resumen de compra</h2>
                 <span>{lineas.length} {lineas.length === 1 ? 'producto' : 'productos'}</span>
               </div>
-              <div className="checkout-summary-row"><span>Subtotal</span><strong>{moneda(subtotal)}</strong></div>
+              <div className="checkout-summary-row"><span>Subtotal (IGV incluido)</span><strong>{moneda(subtotal)}</strong></div>
               <div className="checkout-promo-placeholder">
                 <div><Tag size={15} /><span>Código promocional</span></div>
                 <button type="button" disabled title="Los cupones estarán disponibles próximamente">Próximamente</button>
@@ -367,12 +367,12 @@ export default function CheckoutPage() {
                 <span>Gastos de envío</span>
                 <strong>{selectedZone ? moneda(Number(selectedZone.costoEnvio)) : 'Selecciona dirección'}</strong>
               </div>
-              <div className="checkout-summary-row"><span>IGV (18%)</span><strong>{moneda(igv)}</strong></div>
+              <div className="checkout-summary-row"><span>IGV incluido (18%)</span><strong>{moneda(igv)}</strong></div>
               <div className="checkout-summary-total">
                 <span>Total</span>
                 <strong>{moneda(estimatedTotal)}</strong>
               </div>
-              <p className="checkout-summary-disclaimer">El total definitivo se calcula y verifica nuevamente al guardar el pedido.</p>
+              <p className="checkout-summary-disclaimer">Los precios de los productos incluyen IGV. El total se verifica nuevamente al guardar el pedido.</p>
               <button
                 type="button"
                 className="checkout-place-order"

@@ -50,6 +50,7 @@ function ProductoCard({ producto }: Props) {
           <span className="producto-precio-grupo">
             {producto.precioOriginal != null && producto.porcentajeDescuento != null && <del className="producto-precio-original">{`S/. ${producto.precioOriginal.toFixed(2)}`}</del>}
             <strong className="producto-precio">S/. {producto.precio.toFixed(2)}</strong>
+            <small className="producto-precio-igv">IGV incluido</small>
           </span>
           <span className={`producto-disponibilidad${producto.stockDisponible > 0 ? '' : ' agotado'}`}>
             <span aria-hidden="true">●</span> {producto.stockDisponible > 0 ? 'Disponible' : 'Agotado'}

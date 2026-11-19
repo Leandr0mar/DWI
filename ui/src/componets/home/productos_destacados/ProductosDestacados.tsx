@@ -95,7 +95,10 @@ function ProductosDestacados({ onAgregar }: { onAgregar: (producto: Producto) =>
 							<h3>{product.name}</h3>
 							<p>{product.description}</p>
 							<div className="producto-footer">
-								<strong>S/ {product.price.toFixed(2)}</strong>
+								<span className="producto-precio-destacado">
+									<strong>S/ {product.price.toFixed(2)}</strong>
+									<small>IGV incluido</small>
+								</span>
 								<button
 									type="button"
 									className={addedProducts[product.name] ? 'is-added' : ''}

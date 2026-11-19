@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Activity, AlertTriangle, Bell, CheckCircle2, ChevronDown, Clock3, DollarSign, History, LayoutDashboard, LogOut,
   MapPin, Menu, Package, Pencil, Plus, Search, ShoppingBag, Tags, Trash2, UserRound, UsersRound, X,
   type LucideIcon,
 } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import logoCremissimo from '../../assets/logo/img_logo3.png'
+import { AUTH_USER_QUERY_KEY, AuthApiError, cerrarSesion } from '../../services/auth'
 import {
   dashboardPaths, getList, getOne, mutate,
   DashboardApiError, type Address, type Administrator, type Category, type Customer, type DashboardEntity,
@@ -30,7 +32,7 @@ type Field = {
   disabled?: boolean
   type?: 'text' | 'number' | 'email' | 'password' | 'url' | 'date' | 'textarea' | 'select' | 'multiselect' | 'checkbox' | 'color'
   required?: boolean
-  options?: { value: string; label: string }[]
+  options?: { value: string; label: string; colorHex?: string }[]
   step?: string
   min?: string
   max?: string
@@ -51,7 +53,7 @@ type Section = {
 }
 
 const sections: Section[] = [
-  { id: 'products', title: 'Productos', singular: 'producto', description: 'Administra el catálogo y las existencias.', icon: Package, create: true, edit: true, remove: true, columns: [{ key: 'nombre', label: 'Producto' }, { key: 'sku', label: 'SKU' }, { key: 'categoria', label: 'Categoría' }, { key: 'precioBase', label: 'Precio' }, { key: 'stockDisponible', label: 'Stock' }] },
+  { id: 'products', title: 'Productos', singular: 'producto', description: 'Administra el catálogo y las existencias.', icon: Package, create: true, edit: true, remove: true, columns: [{ key: 'nombre', label: 'Producto' }, { key: 'sku', label: 'SKU' }, { key: 'categoria', label: 'Categoría' }, { key: 'precioBase', label: 'Precio final' }, { key: 'stockDisponible', label: 'Stock' }] },
   { id: 'offers', title: 'Ofertas', singular: 'oferta', description: 'Programa descuentos por producto y vigencia.', icon: Tags, create: true, edit: true, remove: true, columns: [{ key: 'nombre', label: 'Oferta' }, { key: 'porcentaje', label: 'Descuento' }, { key: 'fechaInicio', label: 'Desde' }, { key: 'fechaFin', label: 'Hasta' }, { key: 'productos', label: 'Productos' }, { key: 'estado', label: 'Estado' }] },
   { id: 'categories', title: 'Categorías', singular: 'categoría', description: 'Organiza los productos en colecciones.', icon: Tags, create: true, edit: true, remove: true, columns: [{ key: 'nombre', label: 'Categoría' }, { key: 'estado', label: 'Estado' }] },
   { id: 'flavors', title: 'Sabores', singular: 'sabor', description: 'Gestiona los sabores disponibles para los productos.', icon: Activity, create: true, edit: true, remove: true, columns: [{ key: 'nombre', label: 'Sabor' }, { key: 'colorHex', label: 'Color' }, { key: 'estadoDisponibilidad', label: 'Disponibilidad' }] },
@@ -135,6 +137,16 @@ function isValidHexColor(value: string): boolean {
   return /^#(?:[a-f\d]{3}|[a-f\d]{6})$/i.test(value.trim())
 }
 
+function getContrastColor(hexColor: string): string {
+  const hex = hexColor.trim().replace('#', '')
+  const normalizedHex = hex.length === 3 ? hex.split('').map((digit) => digit + digit).join('') : hex
+  const channels = [0, 2, 4].map((index) => parseInt(normalizedHex.slice(index, index + 2), 16) / 255)
+  const [red, green, blue] = channels.map((channel) => (
+    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  ))
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue > 0.179 ? '#33261c' : '#ffffff'
+}
+
 function normalizeRows(sectionId: SectionId, rows: DashboardEntity[], addresses: Address[]): DashboardEntity[] {
   if (sectionId === 'customers') {
     return (rows as Customer[]).map((customer) => ({
@@ -188,10 +200,10 @@ function fieldsFor(sectionId: SectionId, entity?: DashboardEntity, options?: { c
     case 'products':
       return [
         { key: 'sku', label: 'SKU', required: true }, { key: 'nombre', label: 'Nombre', required: true },
-        { key: 'descripcion', label: 'Descripción', type: 'textarea' }, { key: 'precioBase', label: 'Precio base', type: 'number', step: '0.01', required: true },
+        { key: 'descripcion', label: 'Descripción', type: 'textarea' }, { key: 'precioBase', label: 'Precio final (IGV incluido)', type: 'number', step: '0.01', required: true },
         { key: 'maxSabores', label: 'Máximo de sabores', type: 'number', required: true }, { key: 'stockDisponible', label: 'Stock disponible', type: 'number', required: true },
         { key: 'categoriaId', label: 'Categoría', type: 'select', required: true, options: choices.categories.map((row) => ({ value: String(row.id), label: row.nombre })) },
-        { key: 'saboresIds', label: 'Sabores', type: 'multiselect', options: choices.flavors.map((row) => ({ value: String(row.id), label: row.nombre })) },
+        { key: 'saboresIds', label: 'Sabores', type: 'multiselect', options: choices.flavors.map((row) => ({ value: String(row.id), label: row.nombre, colorHex: row.colorHex })) },
         { key: 'ofertasIds', label: 'Ofertas asociadas', type: 'multiselect', hint: 'Las ofertas se aplican dentro de su vigencia; no pueden coincidir en fechas para un mismo producto.', options: choices.offers.map((row) => ({ value: String(row.id), label: `${row.nombre} (${row.porcentaje}% · ${row.fechaInicio}–${row.fechaFin})` })) },
         { key: 'urlImagen', label: 'URL de imagen', type: 'url', required: true }, { key: 'pesoVolumen', label: 'Peso / volumen', required: true },
         { key: 'tipoPresentacion', label: 'Tipo de presentación', type: 'select', required: true, options: ['CONO', 'PALETA', 'VASO', 'COPA', 'LITRO', 'BARRA'].map((value) => ({ value, label: value })) },
@@ -272,11 +284,30 @@ function DashboardModal({ title, fields, values, onChange, onClose, onSubmit, sa
   saving: boolean
   error: string
 }) {
+  const [multiSearch, setMultiSearch] = useState<Record<string, string>>({})
+  const [previewFailedUrl, setPreviewFailedUrl] = useState('')
+  const [selectionError, setSelectionError] = useState('')
+
+  function handleFormSubmit(event: FormEvent<HTMLFormElement>) {
+    const missingSelection = fields.find((field) => {
+      if (field.type !== 'multiselect' || !field.required) return false
+      const selectedValues = values[field.key]
+      return !Array.isArray(selectedValues) || selectedValues.length === 0
+    })
+    if (missingSelection) {
+      event.preventDefault()
+      setSelectionError(`Selecciona al menos una opción en «${missingSelection.label}».`)
+      return
+    }
+    setSelectionError('')
+    onSubmit(event)
+  }
+
   return (
     <div className="dashboard-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <section className="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-modal-title">
         <header><div><span className="dashboard-eyebrow">GESTIÓN DEL DASHBOARD</span><h2 id="dashboard-modal-title">{title}</h2></div><button type="button" className="dashboard-modal-close" onClick={onClose} aria-label="Cerrar"><X size={20} /></button></header>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleFormSubmit}>
           <div className="dashboard-modal-fields">
             {fields.map((field) => {
               const value = values[field.key]
@@ -292,13 +323,72 @@ function DashboardModal({ title, fields, values, onChange, onClose, onSubmit, sa
                   <small>Escribe un hexadecimal (#RRGGBB) o usa el selector; la muestra se actualiza al instante.</small>
                 </label>
               }
+              if (field.key === 'urlImagen') {
+                const imageUrl = typeof value === 'string' ? value.trim() : ''
+                const previewUrl = validAvatarUrl(imageUrl)
+                return <label className="dashboard-form-field dashboard-form-field--wide" key={field.key}>{field.label}
+                  <input type="url" required={field.required} value={typeof value === 'string' ? value : ''} onChange={(event) => onChange(field.key, event.target.value)} />
+                  {previewUrl && previewFailedUrl !== previewUrl
+                    ? <img className="dashboard-image-preview" src={previewUrl} alt="Vista previa del producto" onError={() => setPreviewFailedUrl(previewUrl)} />
+                    : previewUrl
+                      ? <small role="status">No se pudo cargar la imagen desde esta URL.</small>
+                      : <small>Ingresa una URL de imagen válida para ver la vista previa.</small>}
+                </label>
+              }
               if (field.type === 'textarea') return <label className="dashboard-form-field dashboard-form-field--wide" key={field.key}>{field.label}<textarea required={field.required} value={typeof value === 'string' ? value : ''} onChange={(event) => onChange(field.key, event.target.value)} /></label>
               if (field.type === 'select') return <label className="dashboard-form-field" key={field.key}>{field.label}<select required={field.required} disabled={field.disabled} value={typeof value === 'string' ? value : ''} onChange={(event) => onChange(field.key, event.target.value)}><option value="">Selecciona…</option>{field.options?.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}</select></label>
-              if (field.type === 'multiselect') return <label className="dashboard-form-field dashboard-form-field--wide" key={field.key}>{field.label}<select multiple required={field.required} value={Array.isArray(value) ? value : []} onChange={(event) => onChange(field.key, Array.from(event.currentTarget.selectedOptions, (option) => option.value))}>{field.options?.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}</select><small>{field.hint ?? 'Usa Ctrl o Cmd para seleccionar varios elementos.'}</small></label>
+              if (field.type === 'multiselect') {
+                const selectedValues = Array.isArray(value) ? value : []
+                const normalizedSearch = (multiSearch[field.key] ?? '').trim().toLocaleLowerCase()
+                const filteredOptions = (field.options ?? []).filter((option) => option.label.toLocaleLowerCase().includes(normalizedSearch))
+                return <div className="dashboard-form-field dashboard-form-field--wide dashboard-multiselect" key={field.key}>
+                  <span>{field.label}</span>
+                  <div className="dashboard-multiselect-toolbar">
+                    <input
+                      type="search"
+                      aria-label={`Buscar ${field.label.toLocaleLowerCase()}`}
+                      placeholder={`Buscar ${field.label.toLocaleLowerCase()}...`}
+                      value={multiSearch[field.key] ?? ''}
+                      onChange={(event) => setMultiSearch((current) => ({ ...current, [field.key]: event.target.value }))}
+                    />
+                    <span aria-live="polite">{selectedValues.length} seleccionados</span>
+                    {selectedValues.length > 0 && <button type="button" className="dashboard-multiselect-clear" onClick={() => { onChange(field.key, []); setSelectionError('') }}>Quitar selección</button>}
+                  </div>
+                  <div className="dashboard-multiselect-options" role="group" aria-label={field.label}>
+                    {filteredOptions.map((option) => {
+                      const selected = selectedValues.includes(option.value)
+                      const flavorColor = option.colorHex && isValidHexColor(option.colorHex) ? option.colorHex : undefined
+                      const selectedStyle = selected && flavorColor
+                        ? { backgroundColor: flavorColor, borderColor: '#000000', color: getContrastColor(flavorColor) }
+                        : undefined
+                      return <button
+                        type="button"
+                        key={option.value}
+                        className={`dashboard-multiselect-option${selected ? ' is-selected' : ''}`}
+                        aria-pressed={selected}
+                        style={selectedStyle}
+                        onClick={() => {
+                          onChange(field.key, selected
+                            ? selectedValues.filter((selectedValue) => selectedValue !== option.value)
+                            : [...selectedValues, option.value])
+                          setSelectionError('')
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={selectedStyle ? { backgroundColor: selectedStyle.color, color: flavorColor } : undefined}
+                        >{selected ? '✓' : '+'}</span>{option.label}
+                      </button>
+                    })}
+                    {filteredOptions.length === 0 && <small className="dashboard-multiselect-empty">No se encontraron opciones.</small>}
+                  </div>
+                  {field.hint && <small>{field.hint}</small>}
+                </div>
+              }
               return <label className="dashboard-form-field" key={field.key}>{field.label}<input type={field.type ?? 'text'} required={field.required} step={field.step} min={field.min} max={field.max} value={typeof value === 'string' ? value : ''} onChange={(event) => onChange(field.key, event.target.value)} /></label>
             })}
           </div>
-          {error && <p className="dashboard-form-error" role="alert">{error}</p>}
+          {(selectionError || error) && <p className="dashboard-form-error" role="alert">{selectionError || error}</p>}
           <footer><button type="button" className="dashboard-secondary-button" onClick={onClose} disabled={saving}>Cancelar</button><button type="submit" className="dashboard-primary-button" disabled={saving}>{saving ? 'Guardando…' : 'Guardar'}</button></footer>
         </form>
       </section>
@@ -327,6 +417,7 @@ function OrderCreateModal({ customers, addresses, products, flavors, saving, err
   const customerAddresses = addresses.filter((address) => address.clienteId === Number(clienteId))
   const [direccionId, setDireccionId] = useState(String(customerAddresses[0]?.id ?? ''))
   const [lines, setLines] = useState<OrderLineForm[]>([{ key: 1, productoId: '', cantidad: '1', saboresIds: [] }])
+  const [flavorSearch, setFlavorSearch] = useState<Record<number, string>>({})
   const [validationError, setValidationError] = useState('')
 
   function changeCustomer(value: string) {
@@ -376,12 +467,64 @@ function OrderCreateModal({ customers, addresses, products, flavors, saving, err
           {lines.map((line, index) => {
             const product = products.find((item) => item.id === Number(line.productoId))
             const productFlavorIds = product?.saboresIds
-            const availableFlavors = productFlavorIds ? flavors.filter((flavor) => productFlavorIds.includes(flavor.id)) : flavors
+            const availableFlavors = !product ? [] : productFlavorIds
+              ? flavors.filter((flavor) => productFlavorIds.includes(flavor.id))
+              : flavors
+            const normalizedFlavorSearch = (flavorSearch[line.key] ?? '').trim().toLocaleLowerCase()
+            const filteredFlavors = availableFlavors.filter((flavor) => flavor.nombre.toLocaleLowerCase().includes(normalizedFlavorSearch))
+            const flavorLimit = product?.maxSabores ?? 0
             return <fieldset className="dashboard-order-line" key={line.key}>
               <legend>Producto {index + 1}</legend>
-              <label className="dashboard-form-field">Producto<select required value={line.productoId} onChange={(event) => updateLine(line.key, { productoId: event.target.value, saboresIds: [] })}><option value="">Selecciona…</option>{products.map((item) => <option key={item.id} value={item.id}>{item.nombre} — {item.sku}</option>)}</select></label>
+              <label className="dashboard-form-field">Producto<select required value={line.productoId} onChange={(event) => { updateLine(line.key, { productoId: event.target.value, saboresIds: [] }); setFlavorSearch((current) => ({ ...current, [line.key]: '' })) }}><option value="">Selecciona…</option>{products.map((item) => <option key={item.id} value={item.id}>{item.nombre} — {item.sku}</option>)}</select></label>
               <label className="dashboard-form-field">Cantidad<input type="number" min="1" step="1" required value={line.cantidad} onChange={(event) => updateLine(line.key, { cantidad: event.target.value })} /></label>
-              <label className="dashboard-form-field dashboard-form-field--wide">Sabores (máx. {product?.maxSabores ?? 0})<select multiple value={line.saboresIds} onChange={(event) => updateLine(line.key, { saboresIds: Array.from(event.currentTarget.selectedOptions, (option) => option.value) })}>{availableFlavors.map((flavor) => <option key={flavor.id} value={flavor.id}>{flavor.nombre}</option>)}</select></label>
+              <div className="dashboard-form-field dashboard-form-field--wide dashboard-multiselect">
+                <span>Sabores (máx. {flavorLimit})</span>
+                <div className="dashboard-multiselect-toolbar">
+                  <input
+                    type="search"
+                    aria-label={`Buscar sabores del producto ${index + 1}`}
+                    placeholder="Buscar sabores..."
+                    value={flavorSearch[line.key] ?? ''}
+                    disabled={!availableFlavors.length}
+                    onChange={(event) => setFlavorSearch((current) => ({ ...current, [line.key]: event.target.value }))}
+                  />
+                  <span aria-live="polite">{line.saboresIds.length} / {flavorLimit} seleccionados</span>
+                  {line.saboresIds.length > 0 && <button type="button" className="dashboard-multiselect-clear" onClick={() => updateLine(line.key, { saboresIds: [] })}>Quitar selección</button>}
+                </div>
+                <div className="dashboard-multiselect-options" role="group" aria-label={`Sabores del producto ${index + 1}`}>
+                  {filteredFlavors.map((flavor) => {
+                    const flavorId = String(flavor.id)
+                    const selected = line.saboresIds.includes(flavorId)
+                    const flavorColor = isValidHexColor(flavor.colorHex) ? flavor.colorHex : undefined
+                    const selectedStyle = selected && flavorColor
+                      ? { backgroundColor: flavorColor, borderColor: '#000000', color: getContrastColor(flavorColor) }
+                      : undefined
+                    const limitReached = !selected && line.saboresIds.length >= flavorLimit
+                    return <button
+                      type="button"
+                      key={flavor.id}
+                      className={`dashboard-multiselect-option${selected ? ' is-selected' : ''}`}
+                      aria-pressed={selected}
+                      disabled={limitReached}
+                      style={selectedStyle}
+                      onClick={() => updateLine(line.key, {
+                        saboresIds: selected
+                          ? line.saboresIds.filter((id) => id !== flavorId)
+                          : [...line.saboresIds, flavorId],
+                      })}
+                    >
+                      <span
+                        aria-hidden="true"
+                        style={selectedStyle ? { backgroundColor: selectedStyle.color, color: flavorColor } : undefined}
+                      >{selected ? '✓' : '+'}</span>{flavor.nombre}
+                    </button>
+                  })}
+                  {!filteredFlavors.length && <small className="dashboard-multiselect-empty">
+                    {!product ? 'Selecciona un producto para ver sus sabores.' : availableFlavors.length ? 'No se encontraron sabores.' : 'Este producto no tiene sabores disponibles.'}
+                  </small>}
+                </div>
+                {line.saboresIds.length >= flavorLimit && flavorLimit > 0 && <small>Alcanzaste el máximo de sabores para este producto.</small>}
+              </div>
               {lines.length > 1 && <button type="button" className="dashboard-remove-line" onClick={() => setLines((current) => current.filter((entry) => entry.key !== line.key))}>Quitar producto</button>}
             </fieldset>
           })}
@@ -528,7 +671,7 @@ function Overview({ products, orders, customers, loading, onGo }: {
   const maxProductUnits = Math.max(...metrics.topProducts.map((product) => product.units), 1)
 
   return <>
-    <div className="dashboard-page-heading"><div><span className="dashboard-eyebrow">ADMINISTRACIÓN</span><h1>¡Hola, administrador!</h1><p>Indicadores clave para supervisar ventas, pedidos e inventario.</p></div><Link className="dashboard-store-link" to="/inicio"><ShoppingBag size={17} /> Ver tienda</Link></div>
+    <div className="dashboard-page-heading"><div><span className="dashboard-eyebrow">ADMINISTRACIÓN</span><h1>¡Hola, administrador!</h1><p>Indicadores clave para supervisar ventas, pedidos e inventario.</p></div></div>
     <section className="dashboard-stats" aria-label="Resumen del negocio">
       {[
         { label: 'Ventas pagadas del mes', value: formatCurrency(metrics.salesThisMonth), note: 'Pedidos del mes no cancelados', icon: DollarSign, tone: 'green' },
@@ -624,6 +767,8 @@ function Overview({ products, orders, customers, loading, onGo }: {
 
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const sectionParam = searchParams.get('section')
   const activeSection = sections.find((section) => section.id === sectionParam)?.id ?? 'overview'
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -649,6 +794,22 @@ export default function Dashboard() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [orderSaving, setOrderSaving] = useState(false)
   const [orderError, setOrderError] = useState('')
+  const logoutMutation = useMutation({
+    mutationFn: cerrarSesion,
+    onSuccess: () => {
+      queryClient.setQueryData(AUTH_USER_QUERY_KEY, null)
+      navigate('/login', { replace: true })
+    },
+    onError: (error) => {
+      setDialog({
+        kind: 'error',
+        title: 'No se pudo cerrar la sesión',
+        message: error instanceof AuthApiError
+          ? error.message
+          : 'Ocurrió un problema. Inténtalo nuevamente más tarde.',
+      })
+    },
+  })
 
   const selectedSection = useMemo(() => sections.find((section) => section.id === activeSection), [activeSection])
 
@@ -993,7 +1154,7 @@ export default function Dashboard() {
           {group.items.map(({ id, label, icon: Icon }) => <button type="button" key={id} className={`dashboard-nav-item${activeSection === id ? ' is-active' : ''}`} onClick={() => selectSection(id)} aria-current={activeSection === id ? 'page' : undefined}><Icon size={19} strokeWidth={1.8} /><span>{label}</span></button>)}
         </div>)}
       </nav>
-      <div className="dashboard-sidebar-bottom"><div className="dashboard-profile"><div className="dashboard-avatar">AD</div><span><strong>Administración</strong><small>Administrador</small></span><ChevronDown size={16} /></div><Link to="/login" className="dashboard-logout"><LogOut size={17} /> Cerrar sesión</Link></div>
+      <div className="dashboard-sidebar-bottom"><div className="dashboard-profile"><div className="dashboard-avatar">AD</div><span><strong>Administración</strong><small>Administrador</small></span><ChevronDown size={16} /></div><button type="button" className="dashboard-logout" onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}><LogOut size={17} /> {logoutMutation.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}</button></div>
     </aside>
     {sidebarOpen && <button className="dashboard-backdrop" type="button" aria-label="Cerrar menú" onClick={() => setSidebarOpen(false)} />}
     <main className="dashboard-main">

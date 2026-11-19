@@ -78,7 +78,7 @@ export default function CarritoModal({ abierto, carrito, onCerrar, onEliminar, o
             </div>
 
             <div className="carrito-resumen">
-              <div><span>Subtotal ({carrito.length} {carrito.length === 1 ? 'unidad' : 'unidades'})</span><strong>S/ {subtotal.toFixed(2)}</strong></div>
+              <div><span>Subtotal (IGV incluido)</span><strong>S/ {subtotal.toFixed(2)}</strong></div>
               <p>El costo de envío y el total final se calcularán al continuar con la compra.</p>
               <Link className="carrito-ir-pagina" to="/carrito" onClick={onCerrar}>Revisar carrito <span aria-hidden="true">→</span></Link>
             </div>

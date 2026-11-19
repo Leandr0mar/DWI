@@ -18,14 +18,16 @@ jobs:
     name: API tests
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: root
+          POSTGRES_DB: cremissimo
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping --silent --host=127.0.0.1"
+          --health-cmd="pg_isready --username=postgres --dbname=cremissimo"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -41,19 +43,12 @@ jobs:
           cache: maven
           cache-dependency-path: api/pom.xml
 
-      - name: Create empty test database
-        working-directory: api
-        env:
-          MYSQL_PWD: root
-        run: |
-          mysql --host=127.0.0.1 --port=3306 --user=root -e "CREATE DATABASE cremissimo"
-
       - name: Run API tests
         working-directory: api
         env:
-          DB_URL: jdbc:mysql://127.0.0.1:3306/cremissimo?useSSL=false&serverTimezone=UTC
-          DB_USERNAME: root
-          DB_PASSWORD: root
+          DB_URL: jdbc:postgresql://127.0.0.1:5432/cremissimo?sslmode=disable
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
         run: bash ./mvnw --batch-mode --no-transfer-progress verify
 
   frontend-checks:

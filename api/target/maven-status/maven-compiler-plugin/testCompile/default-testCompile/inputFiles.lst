@@ -1,1 +1,6 @@
 C:\Repositorios\DWI\api\src\test\java\com\dwi\api\ApiApplicationTests.java
+C:\Repositorios\DWI\api\src\test\java\com\dwi\api\catalogo\producto\historial\HistorialStockServiceTest.java
+C:\Repositorios\DWI\api\src\test\java\com\dwi\api\common\exception\GlobalExceptionHandlerTest.java
+C:\Repositorios\DWI\api\src\test\java\com\dwi\api\direccion\service\DireccionServiceTest.java
+C:\Repositorios\DWI\api\src\test\java\com\dwi\api\oferta\service\OfertaServiceTest.java
+C:\Repositorios\DWI\api\src\test\java\com\dwi\api\pedido\service\PedidoServiceTest.java

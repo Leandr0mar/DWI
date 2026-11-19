@@ -5,7 +5,6 @@ import com.dwi.api.catalogo.producto.dto.ProductoResponseDTO;
 import com.dwi.api.catalogo.producto.service.ProductoService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +16,6 @@ public class ProductoController {
     
     private final ProductoService productoService;
     
-    @Autowired
     public ProductoController(ProductoService productoService) {
         this.productoService = productoService;
     }
