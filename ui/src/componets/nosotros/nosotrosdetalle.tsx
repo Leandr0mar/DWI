@@ -31,11 +31,11 @@ type TeamMember = {
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
-  { id: 'coordinator', name: 'Candia Falcón Leandro Omar', role: 'Coordinador', cvUrl: leandroCv, cvPreviewUrl: leandroCvPreview },
-  { id: 'developer-1', name: 'Barrera Chavez Erik Eduardo', role: 'Programador', cvUrl: erikCv, cvPreviewUrl: erikCvPreview },
-  { id: 'developer-2', name: 'Callirgos Huaman Ian Arturo', role: 'Programador', cvUrl: callirgosCv, cvPreviewUrl: callirgosCvPreview },
-  { id: 'developer-3', name: 'Valentín Garay José Alberto', role: 'Programador', cvUrl: valentinCv, cvPreviewUrl: valentinCvPreview },
-  { id: 'developer-4', name: 'Villacorta Latorre Christian Aldair', role: 'Programador', cvUrl: christianCv, cvPreviewUrl: christianCvPreview },
+  { id: 'coordinator', name: 'Candia Falcón Leandro Omar', role: 'Coordinador/Programador de control de Versiones', cvUrl: leandroCv, cvPreviewUrl: leandroCvPreview },
+  { id: 'developer-1', name: 'Barrera Chavez Erik Eduardo', role: 'Programador Backend', cvUrl: erikCv, cvPreviewUrl: erikCvPreview },
+  { id: 'developer-2', name: 'Callirgos Huaman Ian Arturo', role: 'Programador Frontend', cvUrl: callirgosCv, cvPreviewUrl: callirgosCvPreview },
+  { id: 'developer-3', name: 'Valentín Garay José Alberto', role: 'Programador de Base de Datos', cvUrl: valentinCv, cvPreviewUrl: valentinCvPreview },
+  { id: 'developer-4', name: 'Villacorta Latorre Christian Aldair', role: 'Programador Frontend', cvUrl: christianCv, cvPreviewUrl: christianCvPreview },
 ]
 
 function TeamCard({ member }: { member: TeamMember }) {
