@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Activity, AlertTriangle, Bell, CheckCircle2, ChevronDown, Clock3, DollarSign, History, LayoutDashboard, LogOut,
@@ -774,6 +774,7 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [data, setData] = useState<DashboardEntity[]>([])
+  const refreshRequestId = useRef(0)
   const [products, setProducts] = useState<Product[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -823,29 +824,38 @@ export default function Dashboard() {
       loadSection('delivery') as Promise<DeliveryZone[]>,
       getList<Order>(dashboardPaths.orders),
     ])
-    setProducts(productRows)
-    setCategories(categoryRows)
-    setFlavors(flavorRows)
-    setCustomers(customerRows)
-    setAddresses(addressRows)
-    setZones(zoneRows)
-    setOrders(orderRows)
+    return { productRows, categoryRows, flavorRows, customerRows, addressRows, zoneRows, orderRows }
   }, [])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (requestId?: number) => {
+    const currentRequestId = requestId ?? ++refreshRequestId.current
     if (activeSection === 'overview') {
       setLoading(true)
       setLoadError('')
-      try { await loadAuxiliaryData()       } catch (error) {
+      try {
+        const auxiliaryData = await loadAuxiliaryData()
+        if (currentRequestId !== refreshRequestId.current) return
+        setProducts(auxiliaryData.productRows)
+        setCategories(auxiliaryData.categoryRows)
+        setFlavors(auxiliaryData.flavorRows)
+        setCustomers(auxiliaryData.customerRows)
+        setAddresses(auxiliaryData.addressRows)
+        setZones(auxiliaryData.zoneRows)
+        setOrders(auxiliaryData.orderRows)
+      } catch (error) {
+        if (currentRequestId !== refreshRequestId.current) return
         setLoadError('No se pudieron cargar los datos. Inténtalo nuevamente.')
         setDialog({ kind: 'error', title: 'No se pudieron cargar los datos', message: safeFailureMessage(error, 'Inténtalo nuevamente más tarde.') })
-      } finally { setLoading(false) }
+      } finally {
+        if (currentRequestId === refreshRequestId.current) setLoading(false)
+      }
       return
     }
     setLoading(true)
     setLoadError('')
     try {
       const rows = await loadSection(activeSection)
+      if (currentRequestId !== refreshRequestId.current) return
       setData(rows)
       if (activeSection === 'products' || activeSection === 'inventory') setProducts(rows as Product[])
       if (activeSection === 'categories') setCategories(rows as Category[])
@@ -856,14 +866,18 @@ export default function Dashboard() {
       if (activeSection === 'orders') setOrders(rows as Order[])
       if (activeSection === 'offers') setOffers(rows as Offer[])
     } catch (error) {
+      if (currentRequestId !== refreshRequestId.current) return
       setLoadError('No se pudieron cargar los datos. Inténtalo nuevamente.')
       setDialog({ kind: 'error', title: 'No se pudieron cargar los datos', message: safeFailureMessage(error, 'Inténtalo nuevamente más tarde.') })
       setData([])
-    } finally { setLoading(false) }
+    } finally {
+      if (currentRequestId === refreshRequestId.current) setLoading(false)
+    }
   }, [activeSection, loadAuxiliaryData])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => { void refresh() }, 0)
+    const requestId = ++refreshRequestId.current
+    const timer = window.setTimeout(() => { void refresh(requestId) }, 0)
     return () => window.clearTimeout(timer)
   }, [refresh])
 
