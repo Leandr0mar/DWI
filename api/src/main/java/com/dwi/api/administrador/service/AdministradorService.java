@@ -4,6 +4,7 @@ import com.dwi.api.administrador.dto.AdministradorDTO;
 import com.dwi.api.administrador.dto.AdministradorRequestDTO;
 import com.dwi.api.administrador.model.Administrador;
 import com.dwi.api.administrador.repository.AdministradorRepository;
+import com.dwi.api.common.exception.ResourceNotFoundException;
 import com.dwi.api.usuario.model.Usuario;
 import com.dwi.api.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,12 +93,12 @@ public class AdministradorService {
      */
     public void eliminarAdministrador(Long id) {
         Administrador admin = administradorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Administrador no encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Administrador no encontrado."));
         if (admin.getNivelAcceso() == Administrador.NivelAcceso.SUPERADMIN
                 && administradorRepository.countByNivelAcceso(Administrador.NivelAcceso.SUPERADMIN) <= 1) {
             throw new IllegalStateException("No se puede eliminar al último administrador SUPERADMIN.");
         }
-        administradorRepository.delete(admin);
+        usuarioRepository.softDeleteById(admin.getId());
     }
     
     /**

@@ -61,6 +61,7 @@ com\dwi\api\zona\model\ZonaReparto.class
 com\dwi\api\pedido\service\PedidoService.class
 com\dwi\api\seguridad\service\AuthService.class
 com\dwi\api\administrador\model\Administrador$NivelAcceso.class
+com\dwi\api\ApiApplication.class
 com\dwi\api\seguridad\service\AuthService$LoginResult.class
 com\dwi\api\pedido\model\Pedido$EstadoPago.class
 com\dwi\api\catalogo\producto\dto\ProductoRequestDTO.class

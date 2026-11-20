@@ -1,8 +1,6 @@
 package com.dwi.api.pedido.model;
 
 import com.dwi.api.common.audit.BaseEntity;
-import com.dwi.api.direccion.model.Direccion;
-import com.dwi.api.cliente.model.Cliente;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import jakarta.persistence.*;
@@ -16,7 +14,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "pedido")
-@SQLDelete(sql = "UPDATE pedido SET is_deleted = true WHERE id_pedido=?")
+@SQLDelete(sql = "UPDATE pedido SET is_deleted = true, version = version + 1 WHERE id_pedido=? AND version=?")
 @SQLRestriction("is_deleted = false")
 public class Pedido extends BaseEntity {
 
@@ -28,13 +26,17 @@ public class Pedido extends BaseEntity {
     @Column(name = "uuid_pedido", updatable = false, nullable = false, unique = true, length = 36)
     private String uuid = UUID.randomUUID().toString();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cliente", nullable = false)
-    private Cliente cliente;
+    @Column(name = "cliente_id_snapshot")
+    private Long clienteId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_direccion", nullable = false)
-    private Direccion direccion;
+    @Column(name = "cliente_nombre_snapshot", nullable = false, length = 201)
+    private String clienteNombre;
+
+    @Column(name = "cliente_email_snapshot", nullable = false, length = 100)
+    private String clienteEmail;
+
+    @Column(name = "direccion_entrega", nullable = false, length = 1000)
+    private String direccionEntrega;
 
     @Column(name = "stripe_payment_intent_id", length = 150)
     private String stripePaymentIntentId;

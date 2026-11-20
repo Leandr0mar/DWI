@@ -88,12 +88,11 @@ public class CategoriaController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        try {
-            categoriaRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElse(null);
+        if (categoria == null) return ResponseEntity.notFound().build();
+        categoriaRepository.delete(categoria);
+        return ResponseEntity.noContent().build();
     }
     
     /**

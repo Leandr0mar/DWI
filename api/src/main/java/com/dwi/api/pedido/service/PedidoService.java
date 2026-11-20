@@ -103,8 +103,10 @@ public class PedidoService {
         }
 
         Pedido pedido = new Pedido();
-        pedido.setCliente(cliente);
-        pedido.setDireccion(direccion);
+        pedido.setClienteId(cliente.getId());
+        pedido.setClienteNombre(cliente.getNombres() + " " + cliente.getApellidos());
+        pedido.setClienteEmail(cliente.getEmail());
+        pedido.setDireccionEntrega(formatearDireccion(direccion));
         pedido.setCostoEnvio(direccion.getZona().getCostoEnvio());
 
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -145,11 +147,13 @@ public class PedidoService {
 
             DetallePedido detalle = new DetallePedido();
             detalle.setPedido(pedido);
-            detalle.setProducto(producto);
+            detalle.setProductoId(producto.getId());
+            detalle.setProductoNombre(producto.getNombre());
+            detalle.setProductoSku(producto.getSku());
             detalle.setCantidad(requestDetalle.cantidad());
             detalle.setPrecioUnitario(precioUnitario);
             detalle.setSubtotal(subtotalDetalle);
-            detalle.setSabores(sabores);
+            detalle.setSaboresSnapshot(sabores.stream().map(Sabor::getNombre).sorted().collect(Collectors.joining(", ")));
             detalles.add(detalle);
 
             producto.setStockDisponible(producto.getStockDisponible() - requestDetalle.cantidad());
@@ -166,12 +170,12 @@ public class PedidoService {
         detallePedidoRepository.saveAll(detalles);
         for (DetallePedido detalle : detalles) {
             HistorialStock movimiento = new HistorialStock();
-            movimiento.setProducto(detalle.getProducto());
+            movimiento.setProductoId(detalle.getProductoId());
             movimiento.setCantidadAlterada(-detalle.getCantidad());
             movimiento.setTipoMovimiento(HistorialStock.TipoMovimiento.VENTA);
             movimiento.setObservacion("Pedido #" + saved.getId());
-            movimiento.setNombreProducto(detalle.getProducto().getNombre());
-            movimiento.setSkuProducto(detalle.getProducto().getSku());
+            movimiento.setNombreProducto(detalle.getProductoNombre());
+            movimiento.setSkuProducto(detalle.getProductoSku());
             historialStockRepository.save(movimiento);
         }
         guardarHistorialEstado(saved, saved.getEstadoPedido(), "Pedido creado.");
@@ -195,9 +199,7 @@ public class PedidoService {
     }
 
     public List<PedidoAdminDTO> obtenerPedidosDeCliente(Long clienteId) {
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + clienteId));
-        return pedidoRepository.findByCliente(cliente).stream().map(this::toAdminDto).toList();
+        return pedidoRepository.findAllByClienteId(clienteId).stream().map(this::toAdminDto).toList();
     }
 
     public void actualizarEstadoPago(Long idPedido, Pedido.EstadoPago nuevoEstado) {
@@ -235,17 +237,18 @@ public class PedidoService {
             throw new IllegalArgumentException("Solo se pueden eliminar pedidos pendientes sin pago iniciado.");
         }
         for (DetallePedido detalle : detallePedidoRepository.findByPedidoId(id)) {
-            Producto producto = detalle.getProducto();
-            producto.setStockDisponible(producto.getStockDisponible() + detalle.getCantidad());
-            productoRepository.save(producto);
-            HistorialStock movimiento = new HistorialStock();
-            movimiento.setProducto(producto);
-            movimiento.setCantidadAlterada(detalle.getCantidad());
-            movimiento.setTipoMovimiento(HistorialStock.TipoMovimiento.AJUSTE);
-            movimiento.setObservacion("Reverso del pedido #" + id);
-            movimiento.setNombreProducto(producto.getNombre());
-            movimiento.setSkuProducto(producto.getSku());
-            historialStockRepository.save(movimiento);
+            productoRepository.findById(detalle.getProductoId()).ifPresent(producto -> {
+                producto.setStockDisponible(producto.getStockDisponible() + detalle.getCantidad());
+                productoRepository.save(producto);
+                HistorialStock movimiento = new HistorialStock();
+                movimiento.setProductoId(detalle.getProductoId());
+                movimiento.setCantidadAlterada(detalle.getCantidad());
+                movimiento.setTipoMovimiento(HistorialStock.TipoMovimiento.AJUSTE);
+                movimiento.setObservacion("Reverso del pedido #" + id);
+                movimiento.setNombreProducto(detalle.getProductoNombre());
+                movimiento.setSkuProducto(detalle.getProductoSku());
+                historialStockRepository.save(movimiento);
+            });
         }
         pedidoRepository.delete(pedido);
     }
@@ -266,21 +269,21 @@ public class PedidoService {
     private PedidoAdminDTO toAdminDto(Pedido pedido) {
         List<PedidoDetalleAdminDTO> detalles = detallePedidoRepository.findByPedidoId(pedido.getId()).stream()
                 .map(detalle -> new PedidoDetalleAdminDTO(
-                        detalle.getProducto().getId(),
-                        detalle.getProducto().getNombre(),
+                        detalle.getProductoId(),
+                        detalle.getProductoNombre(),
                         detalle.getCantidad(),
                         detalle.getPrecioUnitario(),
                         detalle.getSubtotal(),
-                        detalle.getSabores().stream().map(Sabor::getNombre).sorted().toList()))
+                        detalle.getSaboresSnapshot() == null || detalle.getSaboresSnapshot().isBlank()
+                                ? List.of() : List.of(detalle.getSaboresSnapshot().split(", "))))
                 .toList();
-        Direccion direccion = pedido.getDireccion();
         return new PedidoAdminDTO(
                 pedido.getId(),
                 pedido.getUuid(),
-                pedido.getCliente().getId(),
-                pedido.getCliente().getNombres() + " " + pedido.getCliente().getApellidos(),
-                pedido.getCliente().getEmail(),
-                direccion.getAlias() + ": " + direccion.getLinea1(),
+                pedido.getClienteId(),
+                pedido.getClienteNombre(),
+                pedido.getClienteEmail(),
+                pedido.getDireccionEntrega(),
                 pedido.getSubtotal(),
                 pedido.getCostoEnvio(),
                 pedido.getIgv(),
@@ -289,5 +292,12 @@ public class PedidoService {
                 pedido.getEstadoPedido().name(),
                 detalles,
                 pedido.getCreatedAt());
+    }
+
+    private String formatearDireccion(Direccion direccion) {
+        String detalle = direccion.getLinea2() == null || direccion.getLinea2().isBlank()
+                ? direccion.getLinea1()
+                : direccion.getLinea1() + ", " + direccion.getLinea2();
+        return direccion.getAlias() + ": " + detalle;
     }
 }

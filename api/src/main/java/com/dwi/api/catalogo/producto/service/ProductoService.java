@@ -10,6 +10,7 @@ import com.dwi.api.catalogo.producto.dto.ProductoRequestDTO;
 import com.dwi.api.catalogo.producto.dto.ProductoResponseDTO;
 import com.dwi.api.catalogo.producto.model.Producto;
 import com.dwi.api.catalogo.producto.repository.ProductoRepository;
+import com.dwi.api.common.exception.ResourceNotFoundException;
 import com.dwi.api.catalogo.sabor.model.Sabor;
 import com.dwi.api.catalogo.sabor.repository.SaborRepository;
 import com.dwi.api.common.exception.ResourceNotFoundException;
@@ -161,10 +162,9 @@ public class ProductoService {
      * Elimina un producto por su ID (soft delete)
      */
     public void eliminarProducto(Long id) {
-        if (!productoRepository.existsById(id)) {
-            throw new RuntimeException("Producto no encontrado con ID: " + id);
-        }
-        productoRepository.deleteById(id);
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + id));
+        productoRepository.delete(producto);
     }
     
     /**
@@ -265,7 +265,7 @@ public class ProductoService {
             HistorialStock.TipoMovimiento tipo,
             String observacion) {
         HistorialStock movimiento = new HistorialStock();
-        movimiento.setProducto(producto);
+        movimiento.setProductoId(producto.getId());
         movimiento.setAdministrador(administrador);
         movimiento.setCantidadAlterada(cantidad);
         movimiento.setTipoMovimiento(tipo);

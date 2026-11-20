@@ -2,6 +2,7 @@ package com.dwi.api.usuario.service;
 
 import com.dwi.api.usuario.model.Usuario;
 import com.dwi.api.usuario.repository.UsuarioRepository;
+import com.dwi.api.common.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,10 +89,9 @@ public class UsuarioService {
      * Elimina un usuario (lógicamente mediante soft delete)
      */
     public void eliminarUsuario(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no encontrado con ID: " + id);
-        }
-        usuarioRepository.deleteById(id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+        usuarioRepository.delete(usuario);
     }
     
     /**

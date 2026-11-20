@@ -14,7 +14,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Setter
 @Entity
 @Table(name = "direccion")
-@SQLDelete(sql = "UPDATE direccion SET is_deleted = true WHERE id_direccion=?")
+@SQLDelete(sql = "UPDATE direccion SET is_deleted = true, version = version + 1 WHERE id_direccion=? AND version=?")
 @SQLRestriction("is_deleted = false")
 public class Direccion extends BaseEntity {
 

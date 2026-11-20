@@ -40,11 +40,11 @@ public class DireccionService {
     }
 
     public List<DireccionAdminDTO> listarParaAdministracion() {
-        return direccionRepository.findAll().stream().map(this::toAdminDto).toList();
+        return direccionRepository.listarParaAdministracion().stream().map(this::toAdminDto).toList();
     }
 
     public Optional<DireccionAdminDTO> getParaAdministracion(Long id) {
-        return direccionRepository.findById(id).map(this::toAdminDto);
+        return direccionRepository.buscarParaAdministracion(id).map(this::toAdminDto);
     }
     
     /**
@@ -219,7 +219,17 @@ public class DireccionService {
     public void eliminarDireccion(Long id) {
         Direccion direccion = direccionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada."));
+        Cliente cliente = direccion.getCliente();
+        boolean eraPrincipal = direccion.isEsPrincipal();
         direccionRepository.delete(direccion);
+        if (eraPrincipal) {
+            direccionRepository.findByCliente(cliente).stream()
+                    .findFirst()
+                    .ifPresent(siguiente -> {
+                        siguiente.setEsPrincipal(true);
+                        direccionRepository.save(siguiente);
+                    });
+        }
     }
     
     /**
@@ -280,5 +290,19 @@ public class DireccionService {
                 direccion.getLinea2(),
                 direccion.getReferencia(),
                 direccion.isEsPrincipal());
+    }
+
+    private DireccionAdminDTO toAdminDto(DireccionRepository.DireccionAdminProjection direccion) {
+        return new DireccionAdminDTO(
+                direccion.getId(),
+                direccion.getClienteId(),
+                direccion.getClienteNombre(),
+                direccion.getZonaId(),
+                direccion.getZona(),
+                direccion.getAlias(),
+                direccion.getLinea1(),
+                direccion.getLinea2(),
+                direccion.getReferencia(),
+                direccion.getEsPrincipal());
     }
 }

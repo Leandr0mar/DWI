@@ -21,6 +21,10 @@ public record ApiResponse(String message) {
         return new ApiResponse(CONFLICT);
     }
 
+    public static ApiResponse conflict(String message) {
+        return new ApiResponse(message);
+    }
+
     public static ApiResponse unauthorized() {
         return new ApiResponse(UNAUTHORIZED);
     }

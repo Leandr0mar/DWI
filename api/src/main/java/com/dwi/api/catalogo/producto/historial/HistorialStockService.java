@@ -51,7 +51,7 @@ public class HistorialStockService {
         if (nuevoStock < 0) throw new IllegalArgumentException("El stock no puede quedar en negativo.");
 
         HistorialStock movimiento = new HistorialStock();
-        movimiento.setProducto(producto);
+        movimiento.setProductoId(producto.getId());
         movimiento.setAdministrador(administrador);
         movimiento.setCantidadAlterada(request.cantidadAlterada());
         movimiento.setTipoMovimiento(request.tipoMovimiento());
@@ -64,13 +64,12 @@ public class HistorialStockService {
     }
 
     private HistorialStockDTO toDto(HistorialStock movimiento) {
-        Producto producto = movimiento.getProducto();
         Administrador admin = movimiento.getAdministrador();
         return new HistorialStockDTO(
                 movimiento.getId(),
-                producto == null ? null : producto.getId(),
-                producto == null ? movimiento.getNombreProducto() : producto.getNombre(),
-                producto == null ? movimiento.getSkuProducto() : producto.getSku(),
+                movimiento.getProductoId(),
+                movimiento.getNombreProducto(),
+                movimiento.getSkuProducto(),
                 movimiento.getCantidadAlterada(),
                 movimiento.getTipoMovimiento(),
                 movimiento.getObservacion(),

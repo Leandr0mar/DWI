@@ -80,12 +80,8 @@ public class ProductoController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        try {
-            productoService.eliminarProducto(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        productoService.eliminarProducto(id);
+        return ResponseEntity.noContent().build();
     }
     
     /**

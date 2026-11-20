@@ -1,7 +1,6 @@
 package com.dwi.api.catalogo.producto.historial;
 
 import com.dwi.api.administrador.model.Administrador;
-import com.dwi.api.catalogo.producto.model.Producto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +19,8 @@ public class HistorialStock {
     @Column(name = "id_historial")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_producto")
-    private Producto producto;
+    @Column(name = "producto_id_snapshot")
+    private Long productoId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_admin")

@@ -31,7 +31,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "oferta")
-@SQLDelete(sql = "UPDATE oferta SET is_deleted = true WHERE id_oferta=?")
+@SQLDelete(sql = "UPDATE oferta SET is_deleted = true, version = version + 1 WHERE id_oferta=? AND version=?")
 @SQLRestriction("is_deleted = false")
 public class Oferta extends BaseEntity {
 

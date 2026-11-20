@@ -2,6 +2,7 @@ package com.dwi.api.zona.service;
 
 import com.dwi.api.zona.model.ZonaReparto;
 import com.dwi.api.zona.repository.ZonaRepartoRepository;
+import com.dwi.api.common.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,10 +90,9 @@ public class ZonaRepartoService {
      * Elimina una zona por su ID (soft delete)
      */
     public void eliminarZona(Long id) {
-        if (!zonaRepartoRepository.existsById(id)) {
-            throw new RuntimeException("Zona no encontrada con ID: " + id);
-        }
-        zonaRepartoRepository.deleteById(id);
+        ZonaReparto zona = zonaRepartoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Zona no encontrada con ID: " + id));
+        zonaRepartoRepository.delete(zona);
     }
     
     /**

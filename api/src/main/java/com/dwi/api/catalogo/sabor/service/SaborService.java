@@ -2,6 +2,7 @@ package com.dwi.api.catalogo.sabor.service;
 
 import com.dwi.api.catalogo.sabor.model.Sabor;
 import com.dwi.api.catalogo.sabor.repository.SaborRepository;
+import com.dwi.api.common.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,10 +86,9 @@ public class SaborService {
      * Elimina un sabor por su ID (soft delete)
      */
     public void eliminarSabor(Long id) {
-        if (!saborRepository.existsById(id)) {
-            throw new RuntimeException("Sabor no encontrado con ID: " + id);
-        }
-        saborRepository.deleteById(id);
+        Sabor sabor = saborRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sabor no encontrado con ID: " + id));
+        saborRepository.delete(sabor);
     }
     
     /**

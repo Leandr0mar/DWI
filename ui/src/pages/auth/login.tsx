@@ -6,6 +6,8 @@ import { AuthShell, Field, SubmitButton } from "../../componets/auth/authcompone
 import { AUTH_USER_QUERY_KEY, iniciarSesion } from "../../services/auth";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [formError, setFormError] = useState("");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -27,12 +29,14 @@ export default function Login() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
     setFormError("");
-    login.mutate({
-      email: String(formData.get("login-email") ?? ""),
-      password: String(formData.get("login-password") ?? ""),
-    });
+    login.mutate({ email, password });
+  }
+
+  function populateDemoCredentials(demoEmail: string) {
+    setEmail(demoEmail);
+    setPassword("Cremissimo123!");
+    setFormError("");
   }
 
   return (
@@ -42,25 +46,62 @@ export default function Login() {
       description="Accede a tu cuenta para continuar disfrutando tus sabores favoritos."
     >
       <form className="auth-form" onSubmit={handleSubmit}>
-          <Field id="login-email" label="Correo electrónico" type="email" placeholder="nombre@correo.com" autoComplete="email" />
-          <div className="auth-field">
-            <Field id="login-password" label="Contraseña" type="password" placeholder="Ingresa tu contraseña" autoComplete="current-password" />
-            <div className="auth-forgot-link">
-              <Link to="/recuperar-contrasena" className="auth-link">
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
-          </div>
-          {formError && <p role="alert" className="auth-form-error">{formError}</p>}
-          <SubmitButton disabled={login.isPending}>
-            {login.isPending ? "Ingresando…" : "Ingresar a mi cuenta"}
-          </SubmitButton>
-          <p className="auth-form-footer">
-            ¿Aún no tienes una cuenta?{" "}
-            <Link to="/registro" className="auth-link-gold">
-              Regístrate
+        <Field
+          id="login-email"
+          label="Correo electrónico"
+          type="email"
+          placeholder="nombre@correo.com"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+        <div className="auth-field">
+          <Field
+            id="login-password"
+            label="Contraseña"
+            type="password"
+            placeholder="Ingresa tu contraseña"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <div className="auth-forgot-link">
+            <Link to="/recuperar-contrasena" className="auth-link">
+              ¿Olvidaste tu contraseña?
             </Link>
-          </p>
+          </div>
+        </div>
+        {formError && <p role="alert" className="auth-form-error">{formError}</p>}
+        <SubmitButton disabled={login.isPending}>
+          {login.isPending ? "Ingresando…" : "Ingresar a mi cuenta"}
+        </SubmitButton>
+        <p className="auth-form-footer">
+          ¿Aún no tienes una cuenta?{" "}
+          <Link to="/registro" className="auth-link-gold">
+            Regístrate
+          </Link>
+        </p>
+        <div className="auth-demo-access">
+          <span className="auth-demo-label">Acceso rápido</span>
+          <div className="auth-demo-buttons">
+            <button
+              type="button"
+              className="auth-demo-button"
+              disabled={login.isPending}
+              onClick={() => populateDemoCredentials("admin@cremissimo.test")}
+            >
+              Usar cuenta de administrador
+            </button>
+            <button
+              type="button"
+              className="auth-demo-button"
+              disabled={login.isPending}
+              onClick={() => populateDemoCredentials("ana.garcia@cremissimo.test")}
+            >
+              Usar cuenta de usuario
+            </button>
+          </div>
+        </div>
       </form>
     </AuthShell>
   );

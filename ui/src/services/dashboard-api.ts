@@ -152,7 +152,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new DashboardApiError('No se pudo conectar con el servicio. Revisa tu conexión.', 0)
   }
-  if (!response.ok) throw new DashboardApiError(safeErrorMessage(response.status), response.status)
+  if (!response.ok) {
+    let message = safeErrorMessage(response.status)
+    try {
+      const body = await response.clone().json() as { message?: unknown; mensaje?: unknown; error?: unknown }
+      const serverMessage = body.message ?? body.mensaje ?? body.error
+      if (typeof serverMessage === 'string' && serverMessage.trim()) message = serverMessage
+    } catch { /* Usa el mensaje genérico para respuestas no JSON. */ }
+    throw new DashboardApiError(message, response.status)
+  }
   if (response.status === 204) return undefined as T
   const body = await response.text()
   if (!body) return undefined as T

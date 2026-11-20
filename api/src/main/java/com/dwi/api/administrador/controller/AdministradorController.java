@@ -72,13 +72,8 @@ public class AdministradorController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        try {
-            administradorService.eliminarAdministrador(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            if ("Administrador no encontrado.".equals(e.getMessage())) return ResponseEntity.notFound().build();
-            throw e;
-        }
+        administradorService.eliminarAdministrador(id);
+        return ResponseEntity.noContent().build();
     }
     
     /**

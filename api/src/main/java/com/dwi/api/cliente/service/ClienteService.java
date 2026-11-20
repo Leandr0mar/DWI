@@ -5,6 +5,7 @@ import com.dwi.api.cliente.dto.ClienteAdminDTO;
 import com.dwi.api.cliente.dto.ClienteAdminRequestDTO;
 import com.dwi.api.cliente.model.Cliente;
 import com.dwi.api.cliente.repository.ClienteRepository;
+import com.dwi.api.common.exception.ResourceNotFoundException;
 import com.dwi.api.usuario.model.Usuario;
 import com.dwi.api.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,10 +171,9 @@ public class ClienteService {
      * Elimina un cliente por su ID (soft delete)
      */
     public void eliminarCliente(Long id) {
-        if (!clienteRepository.existsById(id)) {
-            throw new RuntimeException("Cliente no encontrado con ID: " + id);
-        }
-        clienteRepository.deleteById(id);
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con ID: " + id));
+        usuarioRepository.softDeleteById(cliente.getId());
     }
     
     /**

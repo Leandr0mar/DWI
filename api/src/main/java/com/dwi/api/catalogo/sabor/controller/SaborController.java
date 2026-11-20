@@ -68,12 +68,8 @@ public class SaborController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        try {
-            saborService.eliminarSabor(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        saborService.eliminarSabor(id);
+        return ResponseEntity.noContent().build();
     }
     
     /**

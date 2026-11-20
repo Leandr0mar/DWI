@@ -18,7 +18,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "usuario")
 @Inheritance(strategy = InheritanceType.JOINED)
-@SQLDelete(sql = "UPDATE usuario SET is_deleted = true WHERE id_usuario=?")
+@SQLDelete(sql = "UPDATE usuario SET is_deleted = true, version = version + 1 WHERE id_usuario=? AND version=?")
 @SQLRestriction("is_deleted = false") // Hibernate 6.3+ (Reemplaza a @Where)
 public class Usuario extends BaseEntity {
 

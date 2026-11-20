@@ -1,6 +1,7 @@
 package com.dwi.api.common.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import jakarta.validation.ConstraintViolationException;
 import com.dwi.api.common.response.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.servlet.http.HttpServletRequest;
 
 
 /** Convierte errores comunes del dominio y de validación a respuestas HTTP consistentes. */
@@ -41,6 +43,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> handleIllegalState(IllegalStateException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.conflict());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception,
+            HttpServletRequest request) {
+        String message = "DELETE".equalsIgnoreCase(request.getMethod())
+                ? "No se puede eliminar porque tiene elementos asociados."
+                : ApiResponse.CONFLICT;
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.conflict(message));
     }
 
     @ExceptionHandler(AuthenticationException.class)

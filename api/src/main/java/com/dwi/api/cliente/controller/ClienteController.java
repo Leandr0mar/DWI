@@ -85,12 +85,8 @@ public class ClienteController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        try {
-            clienteService.eliminarCliente(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        clienteService.eliminarCliente(id);
+        return ResponseEntity.noContent().build();
     }
     
     /**

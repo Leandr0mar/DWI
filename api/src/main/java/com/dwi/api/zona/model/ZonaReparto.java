@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "zona_reparto")
-@SQLDelete(sql = "UPDATE zona_reparto SET is_deleted = true WHERE id_zona=?")
+@SQLDelete(sql = "UPDATE zona_reparto SET is_deleted = true, version = version + 1 WHERE id_zona=? AND version=?")
 @SQLRestriction("is_deleted = false")
 public class ZonaReparto extends BaseEntity {
 

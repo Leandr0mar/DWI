@@ -1,14 +1,10 @@
 package com.dwi.api.pedido.model;
 
-import com.dwi.api.catalogo.producto.model.Producto;
-import com.dwi.api.catalogo.sabor.model.Sabor;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -25,9 +21,14 @@ public class DetallePedido {
     @JoinColumn(name = "id_pedido", nullable = false)
     private Pedido pedido;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_producto", nullable = false)
-    private Producto producto;
+    @Column(name = "producto_id_snapshot")
+    private Long productoId;
+
+    @Column(name = "producto_nombre_snapshot", nullable = false, length = 100)
+    private String productoNombre;
+
+    @Column(name = "producto_sku_snapshot", nullable = false, length = 50)
+    private String productoSku;
 
     @Column(nullable = false)
     private Integer cantidad;
@@ -38,12 +39,6 @@ public class DetallePedido {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
 
-    // Sabores congelados al momento de la compra
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "detalle_pedido_sabor",
-        joinColumns = @JoinColumn(name = "id_detalle"),
-        inverseJoinColumns = @JoinColumn(name = "id_sabor")
-    )
-    private Set<Sabor> sabores = new HashSet<>();
+    @Column(name = "sabores_snapshot", length = 2000)
+    private String saboresSnapshot;
 }

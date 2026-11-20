@@ -24,7 +24,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "producto")
-@SQLDelete(sql = "UPDATE producto SET is_deleted = true WHERE id_producto=?")
+@SQLDelete(sql = "UPDATE producto SET is_deleted = true, version = version + 1 WHERE id_producto=? AND version=?")
 @SQLRestriction("is_deleted = false")
 public class Producto extends BaseEntity {
 

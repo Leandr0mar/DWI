@@ -1,8 +1,71 @@
+import { useEffect, useState } from 'react'
 import './nosotrosdetalle.css'
-const HERO_IMAGE =
-  "https://images.unsplash.com/flagged/photo-1577997292296-be87ba314290?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1400";
+import heroBackground1 from '../../assets/hero/img1.jpg'
+import heroBackground2 from '../../assets/hero/img2.jpg'
+import heroBackground3 from '../../assets/hero/img3.webp'
+import erikCv from '../../assets/cv/erik-eduardo.pdf'
+import erikCvPreview from '../../assets/cv/erik-eduardo-preview.png'
+import callirgosCv from '../../assets/cv/callirgos.pdf'
+import callirgosCvPreview from '../../assets/cv/callirgos-preview.png'
+import valentinCv from '../../assets/cv/valentin.pdf'
+import valentinCvPreview from '../../assets/cv/valentin-preview.png'
+import leandroCv from '../../assets/cv/leandro-candia.pdf'
+import christianCv from '../../assets/cv/christian-villacorta.pdf'
+import leandroCvPreview from '../../assets/cv/leandro-candia-preview.png'
+import christianCvPreview from '../../assets/cv/christian-villacorta-preview.png'
 const CRAFT_IMAGE =
   "https://images.unsplash.com/photo-1745455695240-3755405ef686?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=85&w=1200";
+
+const HERO_IMAGES = [
+  { src: heroBackground1, alt: 'Vitrina de helados artesanales' },
+  { src: heroBackground2, alt: 'Helado artesanal servido en una copa' },
+  { src: heroBackground3, alt: 'Variedad de helados artesanales' },
+]
+
+type TeamMember = {
+  id: string
+  name: string
+  role: string
+  cvUrl: string | null
+  cvPreviewUrl: string | null
+}
+
+const TEAM_MEMBERS: TeamMember[] = [
+  { id: 'coordinator', name: 'Candia Falcón Leandro Omar', role: 'Coordinador', cvUrl: leandroCv, cvPreviewUrl: leandroCvPreview },
+  { id: 'developer-1', name: 'Barrera Chavez Erik Eduardo', role: 'Programador', cvUrl: erikCv, cvPreviewUrl: erikCvPreview },
+  { id: 'developer-2', name: 'Callirgos Huaman Ian Arturo', role: 'Programador', cvUrl: callirgosCv, cvPreviewUrl: callirgosCvPreview },
+  { id: 'developer-3', name: 'Valentín Garay José Alberto', role: 'Programador', cvUrl: valentinCv, cvPreviewUrl: valentinCvPreview },
+  { id: 'developer-4', name: 'Villacorta Latorre Christian Aldair', role: 'Programador', cvUrl: christianCv, cvPreviewUrl: christianCvPreview },
+]
+
+function TeamCard({ member }: { member: TeamMember }) {
+  const hasCv = Boolean(member.cvUrl)
+
+  return (
+    <article className="ns-team-card">
+      <span className="ns-team-role">{member.role}</span>
+      <h3>{member.name}</h3>
+      <a
+        className={`ns-cv-preview${hasCv ? '' : ' is-placeholder'}`}
+        href={member.cvUrl ?? undefined}
+        download={hasCv ? true : undefined}
+        tabIndex={hasCv ? undefined : -1}
+        aria-label={hasCv ? `Abrir o descargar CV de ${member.name}` : `Vista previa del CV de ${member.name}, pendiente de agregar`}
+        aria-disabled={!hasCv}
+        onClick={(event) => { if (!hasCv) event.preventDefault() }}
+      >
+        <span className="ns-cv-preview-window">
+          {member.cvPreviewUrl ? (
+            <img className="ns-cv-thumbnail" src={member.cvPreviewUrl} alt={`Vista previa de la primera página del CV de ${member.name}`} />
+          ) : (
+            <span className="ns-cv-sheet" aria-hidden="true"><span>PDF</span><i /><i /><i /></span>
+          )}
+        </span>
+        <span>{hasCv ? 'Abrir / descargar CV' : 'CV pendiente de agregar'}</span>
+      </a>
+    </article>
+  )
+}
 
 const VALUES = [
   {
@@ -43,16 +106,40 @@ function CheckIcon() {
 }
 
 export default function Nosotros() {
+  const [activeHeroImage, setActiveHeroImage] = useState(0)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const intervalId = window.setInterval(() => {
+      setActiveHeroImage((current) => (current + 1) % HERO_IMAGES.length)
+    }, 7000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
   return (
     <div className="nosotros-page">
       <main>
-        <section className="ns-hero">
+        <section className="ns-hero" aria-labelledby="ns-hero-title">
+          <div className="ns-hero-background" aria-hidden="true">
+            {HERO_IMAGES.map((image, index) => (
+              <img
+                key={image.src}
+                src={image.src}
+                alt=""
+                className={`ns-hero-background-image${index === activeHeroImage ? ' is-active' : ''}`}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+            ))}
+            <div className="ns-hero-overlay" />
+          </div>
           <div className="ns-hero-inner">
             <div className="ns-hero-copy">
               <span className="ns-pill ns-pill--dark">
                 Nuestra esencia
               </span>
-              <h1 className="ns-hero-title">
+              <h1 id="ns-hero-title" className="ns-hero-title">
                 Creamos momentos que saben a <span>felicidad</span>
               </h1>
               <p className="ns-hero-description">
@@ -67,26 +154,30 @@ export default function Nosotros() {
                 </a>
               </div>
             </div>
-            <div className="ns-hero-visual">
-              <div className="ns-hero-frame" />
-              <img
-                src={HERO_IMAGE}
-                alt="Preparación artesanal de un helado Cremissimo"
-                className="ns-hero-image"
-              />
-              <div className="ns-stats">
-                {[
-                  ["12+", "años creando"],
-                  ["50+", "sabores"],
-                  ["8K+", "clientes"],
-                ].map(([value, label], index) => (
-                  <div key={label} className={`ns-stat${index > 0 ? ' ns-stat--divided' : ''}`}>
-                    <div className="ns-stat-value">{value}</div>
-                    <div className="ns-stat-label">{label}</div>
-                  </div>
-                ))}
-              </div>
+            <div className="ns-stats">
+              {[
+                ["12+", "años creando"],
+                ["50+", "sabores"],
+                ["8K+", "clientes"],
+              ].map(([value, label], index) => (
+                <div key={label} className={`ns-stat${index > 0 ? ' ns-stat--divided' : ''}`}>
+                  <div className="ns-stat-value">{value}</div>
+                  <div className="ns-stat-label">{label}</div>
+                </div>
+              ))}
             </div>
+          </div>
+          <div className="ns-hero-slider-controls" role="group" aria-label="Imágenes destacadas">
+            {HERO_IMAGES.map((image, index) => (
+              <button
+                key={image.src}
+                type="button"
+                className={`ns-hero-slider-dot${index === activeHeroImage ? ' is-active' : ''}`}
+                aria-label={`Mostrar imagen ${index + 1}: ${image.alt}`}
+                aria-pressed={index === activeHeroImage}
+                onClick={() => setActiveHeroImage(index)}
+              />
+            ))}
           </div>
         </section>
 
@@ -200,6 +291,63 @@ export default function Nosotros() {
                   ))}
                 </ul>
               </div>
+          </div>
+        </section>
+
+        <section className="ns-section ns-section--white ns-team-section" aria-labelledby="ns-team-title">
+          <div className="ns-container">
+            <div className="ns-team-heading">
+              <span className="ns-eyebrow">Mapa Organizacional</span>
+              <h2 id="ns-team-title" className="ns-section-title">Organización del proyecto</h2>
+              <p>Un equipo coordinado, con responsabilidades claras y colaboración en cada etapa.</p>
+            </div>
+            <div className="ns-org-chart">
+              <div className="ns-org-level ns-org-level--coordinator">
+                {TEAM_MEMBERS.slice(0, 1).map((member) => (
+                  <TeamCard key={member.id} member={member} />
+                ))}
+              </div>
+              <div className="ns-org-connector" aria-hidden="true" />
+              <div className="ns-org-level ns-org-level--developers">
+                {TEAM_MEMBERS.slice(1).map((member) => (
+                  <TeamCard key={member.id} member={member} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="ns-section ns-section--cream ns-methodology-section" aria-labelledby="ns-methodology-title">
+          <div className="ns-container">
+            <div className="ns-methodology-heading">
+              <span className="ns-eyebrow">Cómo trabajamos</span>
+              <h2 id="ns-methodology-title" className="ns-section-title">Metodología ágil con Kanban</h2>
+              <p>Organizamos el trabajo en ciclos cortos, con seguimiento visible y entregas integradas.</p>
+            </div>
+            <ol className="ns-methodology-steps">
+              <li className="ns-methodology-card">
+                <span className="ns-methodology-step">01</span>
+                <h3>Requerimientos y organización</h3>
+                <p>Centralizamos la información y el seguimiento del equipo en Trello, y registramos los requerimientos en GitHub Issues para organizarlos con Kanban.</p>
+                <div className="ns-methodology-tools"><span>GitHub Issues</span><span>Trello</span><span>Kanban</span></div>
+              </li>
+              <li className="ns-methodology-card">
+                <span className="ns-methodology-step">02</span>
+                <h3>Sprints semanales</h3>
+                <p>Planificamos sprints de una semana y avanzamos de manera incremental, haciendo visible el estado de cada tarea.</p>
+              </li>
+              <li className="ns-methodology-card">
+                <span className="ns-methodology-step">03</span>
+                <h3>Revisión y colaboración</h3>
+                <p>Nos reunimos por Zoom para revisar avances, compartir el trabajo y resolver bloqueos durante el sprint.</p>
+              </li>
+              <li className="ns-methodology-card">
+                <span className="ns-methodology-step">04</span>
+                <h3>Integración antes de la entrega</h3>
+                <p>Tres días antes de la fecha de entrega integramos en GitHub las ramas de cada integrante, revisamos conflictos y preparamos una versión funcional.</p>
+                <div className="ns-methodology-tools"><span>GitHub</span><span>Integración de ramas</span></div>
+              </li>
+            </ol>
           </div>
         </section>
 
